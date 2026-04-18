@@ -29,23 +29,33 @@ export default function LoadingScreen({
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Duración total: 6 segundos (2 segundos por slide × 3 slides)
+    const totalDuration = 6000;
+    const interval = 50;
+    const increment = (100 / totalDuration) * interval;
+
+    const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
-          clearInterval(interval);
+          clearInterval(progressInterval);
           setTimeout(onComplete, 300);
           return 100;
         }
-        return prev + 2;
+        return Math.min(prev + increment, 100);
       });
-    }, 50);
+    }, interval);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(progressInterval);
   }, [onComplete]);
 
   useEffect(() => {
+    // Cambiar slide cada 2 segundos
     const slideInterval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % SLIDES.length);
+      setCurrentSlide(prev => {
+        const next = prev + 1;
+        if (next >= SLIDES.length) return prev; // Mantener en el último slide
+        return next;
+      });
     }, 2000);
 
     return () => clearInterval(slideInterval);
@@ -91,7 +101,7 @@ export default function LoadingScreen({
             />
           </div>
           <p className="text-white text-center mt-2 text-sm">
-            {progress}%
+            {Math.floor(progress)}%
           </p>
         </div>
 
