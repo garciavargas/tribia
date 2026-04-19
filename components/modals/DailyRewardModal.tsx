@@ -29,11 +29,13 @@ export default function DailyRewardModal({ open, onClose, onSuccess }: DailyRewa
       onClose={onClose} 
       maxWidth="xs" 
       fullWidth
-      PaperProps={{
-        sx: {
-          bgcolor: "white",
-          color: "black",
-          borderRadius: 2,
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: "white",
+            color: "black",
+            borderRadius: 2,
+          }
         }
       }}
     >
