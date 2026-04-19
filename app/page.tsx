@@ -19,6 +19,14 @@ export default function Home() {
     setConnecting(true);
     
     try {
+      // @ts-ignore - MiniKit is available in runtime
+      if (!MiniKit.commandsAsync?.walletAuth) {
+        alert("MiniKit no está disponible. Asegúrate de abrir la app desde Worldcoin.");
+        setConnecting(false);
+        return;
+      }
+
+      // @ts-ignore - MiniKit is available in runtime
       const { commandPayload, finalPayload } = await MiniKit.commandsAsync.walletAuth({
         nonce: Math.random().toString(36).substring(7),
         requestId: crypto.randomUUID(),
