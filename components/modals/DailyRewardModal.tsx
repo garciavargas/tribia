@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTitle, Button, Box, Typography, CircularProgress } from "@mui/material";
+import { Dialog, DialogContent, Button, Box, Typography, IconButton } from "@mui/material";
+import { FaTimes, FaGift } from "react-icons/fa";
 
 interface DailyRewardModalProps {
   open: boolean;
@@ -32,26 +33,114 @@ export default function DailyRewardModal({ open, onClose, onSuccess }: DailyRewa
       slotProps={{
         paper: {
           sx: {
-            bgcolor: "white",
-            color: "black",
-            borderRadius: 2,
+            borderRadius: 4,
+            m: 2,
+            maxWidth: 400,
+            bgcolor: "#f5f5f5"
           }
         }
       }}
     >
-      <DialogTitle sx={{ textAlign: "center", fontWeight: "bold", color: "black" }}>
-        🎁 Recompensa Diaria
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ textAlign: "center", py: 2 }}>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "black", mb: 2 }}>
-            +1 WGoal
-          </Typography>
-          <Typography variant="body2" sx={{ color: "gray", mb: 4 }}>
-            Reclama tu recompensa diaria por iniciar sesión
+      <DialogContent sx={{ p: 0, position: "relative" }}>
+        {/* Close Button */}
+        <IconButton
+          onClick={onClose}
+          disabled={loading}
+          sx={{
+            position: "absolute",
+            right: 16,
+            top: 16,
+            bgcolor: "#e0e0e0",
+            width: 40,
+            height: 40,
+            "&:hover": { bgcolor: "#d0d0d0" }
+          }}
+        >
+          <FaTimes size={18} />
+        </IconButton>
+
+        {/* Content */}
+        <Box sx={{ p: 4, pt: 5, textAlign: "center" }}>
+          {/* Icon */}
+          <Box 
+            sx={{ 
+              width: 100, 
+              height: 100, 
+              borderRadius: 4,
+              bgcolor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 3,
+              mx: "auto",
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              boxShadow: "0 8px 24px rgba(240, 147, 251, 0.3)"
+            }}
+          >
+            <FaGift size={50} color="white" />
+          </Box>
+
+          {/* Title */}
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 1,
+              color: "#1a1a1a"
+            }}
+          >
+            🎁 Recompensa Diaria
           </Typography>
 
-          {/* Botones */}
+          {/* Amount */}
+          <Box 
+            sx={{ 
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1,
+              px: 3,
+              py: 1.5,
+              bgcolor: "white",
+              borderRadius: 3,
+              mb: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+            }}
+          >
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 800,
+                color: "#FFD700",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.1)"
+              }}
+            >
+              +1
+            </Typography>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 700,
+                color: "#1a1a1a"
+              }}
+            >
+              WGoal
+            </Typography>
+          </Box>
+
+          {/* Description */}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: "#666",
+              mb: 4,
+              maxWidth: 280,
+              mx: "auto"
+            }}
+          >
+            Reclama tu recompensa diaria por iniciar sesión en Tribia
+          </Typography>
+
+          {/* Action Buttons */}
           <Box sx={{ display: "flex", gap: 2 }}>
             <Button
               variant="outlined"
@@ -59,12 +148,16 @@ export default function DailyRewardModal({ open, onClose, onSuccess }: DailyRewa
               onClick={onClose}
               disabled={loading}
               sx={{ 
-                minHeight: 44,
-                borderColor: "black",
-                color: "black",
+                minHeight: 56,
+                borderRadius: 3,
+                borderColor: "#d0d0d0",
+                color: "#1a1a1a",
+                fontWeight: 600,
+                fontSize: "1rem",
+                textTransform: "none",
                 "&:hover": {
-                  borderColor: "black",
-                  bgcolor: "rgba(0,0,0,0.05)"
+                  borderColor: "#b0b0b0",
+                  bgcolor: "#f5f5f5"
                 }
               }}
             >
@@ -76,15 +169,22 @@ export default function DailyRewardModal({ open, onClose, onSuccess }: DailyRewa
               onClick={handleConfirm}
               disabled={loading}
               sx={{ 
-                minHeight: 44,
-                bgcolor: "black",
+                minHeight: 56,
+                borderRadius: 3,
+                bgcolor: "#1a1a1a",
                 color: "white",
+                fontWeight: 600,
+                fontSize: "1rem",
+                textTransform: "none",
                 "&:hover": {
-                  bgcolor: "rgba(0,0,0,0.8)"
+                  bgcolor: "#2a2a2a"
+                },
+                "&:disabled": {
+                  bgcolor: "#ccc"
                 }
               }}
             >
-              {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Confirmar"}
+              {loading ? "Reclamando..." : "Reclamar"}
             </Button>
           </Box>
         </Box>

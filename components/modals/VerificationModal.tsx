@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from "@mui/material";
-import { FaGlobe } from "react-icons/fa";
+import { Dialog, DialogContent, Button, Typography, Box, IconButton } from "@mui/material";
+import { FaGlobe, FaTimes, FaCheckCircle } from "react-icons/fa";
 
 interface VerificationModalProps {
   open: boolean;
@@ -33,47 +33,142 @@ export default function VerificationModal({
       onClose={onClose}
       maxWidth="xs"
       fullWidth
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 4,
+            m: 2,
+            maxWidth: 400,
+            bgcolor: "#f5f5f5"
+          }
+        }
+      }}
     >
-      <DialogTitle sx={{ textAlign: "center", pt: 3 }}>
-        <Box sx={{ fontSize: 60, mb: 2 }}>
-          <FaGlobe />
-        </Box>
-      </DialogTitle>
+      <DialogContent sx={{ p: 0, position: "relative" }}>
+        {/* Close Button */}
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 16,
+            top: 16,
+            bgcolor: "#e0e0e0",
+            width: 40,
+            height: 40,
+            "&:hover": { bgcolor: "#d0d0d0" }
+          }}
+        >
+          <FaTimes size={18} />
+        </IconButton>
 
-      <DialogContent>
-        <Typography variant="h5" sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }}>
-          Conecta con World ID
-        </Typography>
-        
-        <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center", mb: 3 }}>
-          Solo usuarios verificados pueden jugar en Tribia
-        </Typography>
+        {/* Content */}
+        <Box sx={{ p: 4, pt: 5 }}>
+          {/* Icon */}
+          <Box 
+            sx={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: 3,
+              bgcolor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 3,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            }}
+          >
+            <FaGlobe size={40} color="white" />
+          </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            ✅ Verificación con Orb obligatoria
+          {/* Title */}
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 1,
+              color: "#1a1a1a"
+            }}
+          >
+            Conectar tu World ID
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            ✅ 1 WGoal gratis por día
+
+          {/* Subtitle */}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: "#666",
+              mb: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5
+            }}
+          >
+            a Tribia <FaCheckCircle size={16} color="#1976d2" />
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            ✅ Premios hasta 100,000 WGoal
-          </Typography>
+
+          {/* Info Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: "#666",
+                mb: 2,
+                fontSize: "0.9rem"
+              }}
+            >
+              La app verá tu
+            </Typography>
+            
+            <Box 
+              sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 1.5,
+                p: 2,
+                bgcolor: "white",
+                borderRadius: 2
+              }}
+            >
+              <FaCheckCircle size={20} color="#1a1a1a" />
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: "#1a1a1a"
+                }}
+              >
+                Tu prueba de humanidad
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Action Button */}
+          <Button
+            fullWidth
+            variant="contained"
+            size="large"
+            onClick={handleConnect}
+            disabled={loading}
+            sx={{ 
+              minHeight: 56,
+              borderRadius: 3,
+              bgcolor: "#1a1a1a",
+              color: "white",
+              fontWeight: 600,
+              fontSize: "1rem",
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: "#2a2a2a"
+              },
+              "&:disabled": {
+                bgcolor: "#ccc"
+              }
+            }}
+          >
+            {loading ? "Conectando..." : "Aprobar"}
+          </Button>
         </Box>
       </DialogContent>
-
-      <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button
-          fullWidth
-          variant="contained"
-          size="large"
-          onClick={handleConnect}
-          disabled={loading}
-          sx={{ minHeight: 44 }}
-        >
-          {loading ? "Conectando..." : "Conectar Wallet"}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

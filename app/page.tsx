@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Button, Box, Typography } from "@mui/material";
+import { MiniKit } from "@/lib/minikit";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -14,9 +15,28 @@ export default function Home() {
     setLoading(false);
   };
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setConnecting(true);
-    router.push("/dashboard");
+    
+    try {
+      const { commandPayload, finalPayload } = await MiniKit.commandsAsync.walletAuth({
+        nonce: Math.random().toString(36).substring(7),
+        requestId: crypto.randomUUID(),
+        expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        statement: "Inicia sesión en Tribia para predecir el Mundial 2026"
+      });
+
+      if (finalPayload.status === "success") {
+        router.push("/dashboard");
+      } else {
+        alert("Error al conectar. Intenta de nuevo.");
+        setConnecting(false);
+      }
+    } catch (error) {
+      console.error("Error en Wallet Auth:", error);
+      alert("Error al conectar con World ID");
+      setConnecting(false);
+    }
   };
 
   if (loading) {
@@ -49,7 +69,7 @@ export default function Home() {
           disabled={connecting}
           sx={{ minHeight: 44 }}
         >
-          {connecting ? "Conectando..." : "Conectar Wallet"}
+          {connecting ? "Conectando..." : "Conectar con World ID"}
         </Button>
       </Box>
     </Box>
