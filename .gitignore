@@ -25,6 +25,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# docs privados
+/docs/SETUP_INICIAL_WORLDCOIN.md
+
 # vercel
 .vercel
 

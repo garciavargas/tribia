@@ -81,23 +81,50 @@ export default function Home() {
         return;
       }
 
-      // Paso 1: Verificar World ID (prueba de humanidad)
-      // @ts-expect-error - MiniKit types
-      const verifyResult = await MiniKit.commandsAsync.verify({
-        action: "tribia-signup",
-        signal: crypto.randomUUID(),
-        verification_level: "orb"
-      });
+      // Paso 1: Verificar World ID con IDKit 4.0
+      const { IDKit, orbLegacy } = await import("@worldcoin/idkit-core");
+      
+      // Obtener RP signature del backend
+      const rpSig = await fetch("/api/rp-signature", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "tribia-signup" }),
+      }).then((r) => r.json());
 
-      if (verifyResult.finalPayload.status !== "success") {
-        alert("Necesitas verificar tu identidad con World ID para jugar.");
+      // Crear request de verificación
+      const request = await IDKit.request({
+        app_id: process.env.NEXT_PUBLIC_APP_ID as `app_${string}`,
+        action: "tribia-signup",
+        rp_context: {
+          rp_id: process.env.NEXT_PUBLIC_RP_ID as `rp_${string}`,
+          nonce: rpSig.nonce,
+          created_at: rpSig.created_at,
+          expires_at: rpSig.expires_at,
+          signature: rpSig.sig,
+        },
+        allow_legacy_proofs: true,
+        environment: "production",
+      }).preset(orbLegacy({ signal: crypto.randomUUID() }));
+
+      // Obtener proof del usuario
+      const idkitResponse = await request.pollUntilCompletion();
+
+      // Verificar proof en backend
+      const verifyResult = await fetch("/api/verify-proof", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ idkitResponse }),
+      }).then((r) => r.json());
+
+      if (!verifyResult.success) {
+        alert("Verificación fallida. Intenta de nuevo.");
         setConnecting(false);
         return;
       }
 
       // Paso 2: Conectar wallet
       // @ts-expect-error - MiniKit types
-      const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
+      const { finalPayload } = await MiniKit.walletAuth({
         nonce: Math.random().toString(36).substring(7),
         requestId: crypto.randomUUID(),
         expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -109,7 +136,7 @@ export default function Home() {
         localStorage.setItem("tribia_user", JSON.stringify({
           address: finalPayload.address,
           verified: true,
-          nullifierHash: verifyResult.finalPayload.nullifier_hash,
+          nullifierHash: verifyResult.nullifier,
           joinedAt: Date.now()
         }));
         
@@ -120,8 +147,8 @@ export default function Home() {
         if (!existingUser) {
           await createUser(
             finalPayload.address,
-            verifyResult.finalPayload.verification_level,
-            verifyResult.finalPayload.nullifier_hash
+            "orb",
+            verifyResult.nullifier
           );
         }
         
