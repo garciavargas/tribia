@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import DailyRewardModal from "@/components/modals/DailyRewardModal";
 import PaymentModal from "@/components/modals/PaymentModal";
 import ReferralSystem from "@/components/ReferralSystem";
+import { getWGoalBalance } from "@/lib/rewards";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -28,6 +29,13 @@ export default function Dashboard() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
 
+    // Cargar balance real del contrato
+    const loadBalance = async () => {
+      const realBalance = await getWGoalBalance(parsedUser.address);
+      setBalance(realBalance);
+    };
+    loadBalance();
+
     // Verificar si es primera vez
     const hasReceivedWelcome = localStorage.getItem("tribia_welcome_received");
     
@@ -45,16 +53,26 @@ export default function Dashboard() {
     }
   }, [router]);
 
-  const handleWelcomeComplete = () => {
+  const handleWelcomeComplete = async () => {
     setShowWelcomeModal(false);
-    setBalance(1); // 1 WGoal de bienvenida
     localStorage.setItem("tribia_welcome_received", "true");
     localStorage.setItem("tribia_last_login", new Date().toDateString());
+    
+    // Recargar balance real
+    if (user) {
+      const realBalance = await getWGoalBalance(user.address);
+      setBalance(realBalance);
+    }
   };
 
-  const handleDailyRewardClaimed = () => {
+  const handleDailyRewardClaimed = async () => {
     setShowDailyModal(false);
-    setBalance(prev => prev + 1);
+    
+    // Recargar balance real
+    if (user) {
+      const realBalance = await getWGoalBalance(user.address);
+      setBalance(realBalance);
+    }
   };
 
   if (!user) {
@@ -81,6 +99,7 @@ export default function Dashboard() {
         open={showDailyModal}
         onClose={() => setShowDailyModal(false)}
         onSuccess={handleDailyRewardClaimed}
+        userAddress={user.address}
       />
 
       <div className="min-h-screen bg-gray-50 flex flex-col">

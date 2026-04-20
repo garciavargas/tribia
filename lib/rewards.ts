@@ -52,8 +52,25 @@ export async function getWGoalBalance(
   walletAddress: string
 ): Promise<number> {
   try {
-    // TODO: Implementar lectura del balance desde el contrato
-    // Por ahora retorna 0
+    // @ts-expect-error - MiniKit types
+    const result = await MiniKit.commandsAsync.sendTransaction({
+      transaction: [
+        {
+          address: TRIBIA_CONFIG.token.address,
+          abi: WGOAL_ABI,
+          functionName: "balanceOf",
+          args: [walletAddress]
+        }
+      ]
+    });
+
+    if (result.finalPayload.status === "success") {
+      // Convertir de wei a tokens (18 decimales)
+      const balanceInWei = BigInt(result.finalPayload.return_value || "0");
+      const balance = Number(balanceInWei / BigInt(10 ** 18));
+      return balance;
+    }
+
     return 0;
   } catch (error) {
     console.error("Error getting balance:", error);

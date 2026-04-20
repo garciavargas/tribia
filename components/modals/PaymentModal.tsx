@@ -31,7 +31,7 @@ export default function PaymentModal({
         reference: `tribia-welcome-${Date.now()}`,
         to: process.env.NEXT_PUBLIC_TREASURY_WALLET || "0x7400ffa080c63a689e56936d76752d252fc2ce68",
         tokens: [{
-          symbol: "WLD",
+          symbol: "WGOAL",
           token_amount: amount.toString()
         }],
         description: description
