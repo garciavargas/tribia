@@ -26,12 +26,12 @@ export default function PaymentModal({
     setProcessing(true);
     
     try {
-      // @ts-expect-error - MiniKit types
+      // @ts-expect-error - MiniKit types - WGOAL es token custom
       const { finalPayload } = await MiniKit.pay({
         reference: `tribia-welcome-${Date.now()}`,
         to: process.env.NEXT_PUBLIC_TREASURY_WALLET || "0x7400ffa080c63a689e56936d76752d252fc2ce68",
         tokens: [{
-          symbol: "WGOAL",
+          symbol: "WGOAL" as any,
           token_amount: amount.toString()
         }],
         description: description
