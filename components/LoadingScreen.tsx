@@ -4,17 +4,17 @@ import { useState, useEffect } from "react";
 
 const SLIDES = [
   {
-    image: "/pagina1.png",
+    image: "/pagina1.png?v=2",
     title: "Predice el Mundial 2026",
     subtitle: "Gana hasta 100,000 WGoal"
   },
   {
-    image: "/pagina2.png",
+    image: "/pagina2.png?v=2",
     title: "Solo Usuarios Verificados",
     subtitle: "Conecta con World ID"
   },
   {
-    image: "/pagina3.png",
+    image: "/pagina3.png?v=2",
     title: "1 WGoal Gratis Diario",
     subtitle: "Inicia sesión cada día"
   }
