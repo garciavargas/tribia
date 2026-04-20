@@ -1,6 +1,278 @@
-# ⚽ Tribia - World Cup Prediction Game
+# ⚽ Tribia - Mundial 2026
 
-**Tribia** es una Mini App de Worldcoin que permite a usuarios verificados predecir resultados del Mundial de Fútbol 2026 y ganar tokens **WGoal**.
+**Juego de predicciones del Mundial de Fútbol 2026 con recompensas en tokens WGoal**
+
+[![World Chain](https://img.shields.io/badge/World_Chain-480-blue)](https://worldchain.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+[![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8)](https://tailwindcss.com)
+
+---
+
+## 🎮 ¿Qué es Tribia?
+
+Tribia es una Mini App de Worldcoin que permite a usuarios verificados predecir resultados del Mundial de Fútbol 2026 y ganar tokens **WGoal** por sus aciertos.
+
+### Características Principales
+
+- 🔐 **Verificación World ID** - Solo humanos verificados pueden jugar
+- ⚽ **48 Partidos** - Predice resultados de fase de grupos y eliminatorias
+- 💰 **Recompensas en WGoal** - 5 WGoal por predicción correcta + 1 WGoal diario
+- 🏆 **Premio Gordo** - 100,000 WGoal por predecir el resultado exacto de la final
+- 👥 **Sistema de Referidos** - Invita amigos y gana bonos
+
+---
+
+## 🚀 Estado Actual
+
+### ✅ Implementado
+
+- [x] Autenticación con World ID + Wallet Auth
+- [x] Modal de bienvenida con primer pago (1 WGoal)
+- [x] Recompensa diaria (1 WGoal por login)
+- [x] Token WGoal en World Chain
+- [x] Dashboard de usuario
+- [x] Sistema de referidos
+- [x] Vista de fase de grupos
+- [x] Vista de eliminatorias
+- [x] UI/UX mobile-first
+
+### 🔧 En Desarrollo
+
+- [ ] Integración con API de resultados de partidos
+- [ ] Sistema de pagos automáticos
+- [ ] Base de datos (Firebase)
+- [ ] Notificaciones push
+- [ ] Leaderboard global
+
+---
+
+## 📱 Instalación y Desarrollo
+
+### Requisitos
+
+- Node.js 18+
+- pnpm 8+
+- Cuenta en Worldcoin Developer Portal
+
+### Setup
+
+```bash
+# Clonar repositorio
+git clone https://github.com/tu-usuario/tribia.git
+cd tribia
+
+# Instalar dependencias
+pnpm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus credenciales
+
+# Iniciar servidor de desarrollo
+pnpm dev
+```
+
+### Variables de Entorno
+
+```bash
+# Worldcoin
+NEXT_PUBLIC_APP_ID=app_afe38c34cfb308b51290a00fdf3b58e4
+WORLDCOIN_SIGNING_KEY=tu_signing_key
+
+# WGoal Token
+WGOAL_CONTRACT_ADDRESS=0x1A1E80A27093665a2E6e7f3Af3B69BB64fE79cD7
+TREASURY_WALLET_ADDRESS=0x7400ffa080c63a689e56936d76752d252fc2ce68
+
+# World Chain
+NEXT_PUBLIC_CHAIN_ID=480
+NEXT_PUBLIC_CHAIN_NAME=World Chain
+```
+
+---
+
+## 🎯 Flujo de Usuario
+
+### Primera Vez
+
+1. Usuario abre app desde World App
+2. Ve landing page con información del juego
+3. Click en "Empezar a Jugar"
+4. **World ID Verification** (prueba de humanidad)
+5. **Wallet Auth** (conectar wallet)
+6. Redirect a Dashboard
+7. **Modal de Bienvenida** - Recibe 1 WGoal
+8. Explora partidos y hace predicciones
+
+### Usuario Recurrente
+
+1. Abre app → Redirect automático a Dashboard
+2. Si es nuevo día → **Modal de Recompensa Diaria** (1 WGoal)
+3. Continúa haciendo predicciones
+
+---
+
+## 🏗️ Arquitectura
+
+### Stack Tecnológico
+
+- **Frontend:** Next.js 16 (App Router) + React 19
+- **Estilos:** Tailwind CSS v4 + Material-UI
+- **SDK:** @worldcoin/minikit-js
+- **Blockchain:** World Chain (Optimism Superchain)
+- **Token:** WGoal (ERC-20)
+
+### Estructura del Proyecto
+
+```
+tribia/
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # Landing page
+│   ├── dashboard/         # Dashboard usuario
+│   ├── groups/            # Fase de grupos
+│   ├── knockout/          # Eliminatorias
+│   └── api/               # API routes
+├── components/            # Componentes React
+│   ├── modals/           # Sistema de modales
+│   ├── Header.tsx
+│   └── Footer.tsx
+├── lib/                   # Utilidades
+│   ├── minikit.ts        # MiniKit SDK
+│   ├── token.ts          # WGoal token
+│   └── rewards.ts        # Sistema de recompensas
+├── types/                 # TypeScript types
+├── constants/             # Constantes (grupos, partidos)
+└── docs/                  # Documentación
+```
+
+---
+
+## 💰 Sistema de Recompensas
+
+### Recompensas Automáticas
+
+| Acción | Recompensa |
+|--------|-----------|
+| Registro | 1 WGoal |
+| Login diario | 1 WGoal |
+| Predicción correcta (Grupos) | 5 WGoal |
+| Predicción correcta (Eliminatorias) | 5 WGoal |
+| Acertar campeón (Top 50) | 10,000 WGoal |
+| **Premio Gordo** (resultado exacto final) | **100,000 WGoal** |
+
+### Referidos
+
+- Invita amigos con tu código único
+- Gana 2 WGoal por cada amigo que se registre
+- Tu amigo recibe 1 WGoal extra de bienvenida
+
+---
+
+## 🔐 Seguridad
+
+### Validaciones Implementadas
+
+- ✅ Verificación World ID obligatoria (Orb)
+- ✅ Wallet Auth después de verificación
+- ✅ Protección de rutas privadas
+- ✅ Validación de estados en pagos
+- ✅ Manejo de errores robusto
+
+### Datos Almacenados
+
+```typescript
+// localStorage
+{
+  tribia_user: {
+    address: string,
+    verified: boolean,
+    nullifierHash: string,
+    joinedAt: number
+  },
+  tribia_welcome_received: boolean,
+  tribia_last_login: string
+}
+```
+
+---
+
+## 📊 Calendario Mundial 2026
+
+### Fechas Importantes
+
+- **Inicio:** 11 de junio de 2026
+- **Fase de Grupos:** 11-27 de junio (48 partidos)
+- **Octavos de Final:** 28 junio - 3 julio
+- **Cuartos de Final:** 9-11 de julio
+- **Semifinales:** 14-15 de julio
+- **Final:** 19 de julio de 2026
+
+### Grupos
+
+12 grupos (A-L) con 4 equipos cada uno. Ver `/constants/groups.ts` para detalles completos.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Ejecutar tests
+pnpm test
+
+# Build de producción
+pnpm build
+
+# Iniciar producción
+pnpm start
+```
+
+---
+
+## 📝 Documentación
+
+- [Guía de Inicio Rápido](./manual/GUIA_INICIO_RAPIDO.md)
+- [Protocolo de Desarrollo](./manual/PROTOCOLO_DESARROLLO.md)
+- [Integración Worldcoin](./manual/PROTOCOLO_WORLDCOIN.md)
+- [Checklist de Revisión](./docs/WORLDCOIN_SUBMISSION.md)
+- [Tareas Pendientes](./docs/PENDIENTES.md)
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas! Por favor:
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Add: nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+MIT License - ver [LICENSE](./LICENSE) para más detalles
+
+---
+
+## 🔗 Enlaces
+
+- **World Chain Explorer:** [worldscan.org](https://worldscan.org)
+- **Worldcoin Docs:** [docs.worldcoin.org](https://docs.worldcoin.org)
+- **MiniKit Docs:** [docs.worldcoin.org/minikit](https://docs.worldcoin.org/minikit)
+- **Contrato WGoal:** [0x1A1E...9cD7](https://worldscan.org/address/0x1A1E80A27093665a2E6e7f3Af3B69BB64fE79cD7)
+
+---
+
+## 📞 Contacto
+
+- **Email:** [tu-email]
+- **Telegram:** [@tu-usuario]
+- **Twitter:** [@tu-usuario]
+
+---
+
+**¡Que gane el mejor predictor! ⚽🏆**
 
 ---
 

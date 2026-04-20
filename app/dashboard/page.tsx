@@ -1,27 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DailyRewardModal from "@/components/modals/DailyRewardModal";
+import PaymentModal from "@/components/modals/PaymentModal";
 import ReferralSystem from "@/components/ReferralSystem";
 
 export default function Dashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [balance, setBalance] = useState(0);
   const [streak] = useState(1);
-  const [showModal, setShowModal] = useState(true);
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-  const handleRewardClaimed = () => {
-    setShowModal(false);
+  useEffect(() => {
+    // Verificar autenticación
+    const userData = localStorage.getItem("tribia_user");
+    
+    if (!userData) {
+      router.push("/");
+      return;
+    }
+
+    const parsedUser = JSON.parse(userData);
+    setUser(parsedUser);
+
+    // Verificar si es primera vez
+    const hasReceivedWelcome = localStorage.getItem("tribia_welcome_received");
+    
+    if (!hasReceivedWelcome) {
+      setShowWelcomeModal(true);
+    } else {
+      // Verificar login diario
+      const lastLogin = localStorage.getItem("tribia_last_login");
+      const today = new Date().toDateString();
+      
+      if (lastLogin !== today) {
+        setShowDailyModal(true);
+        localStorage.setItem("tribia_last_login", today);
+      }
+    }
+  }, [router]);
+
+  const handleWelcomeComplete = () => {
+    setShowWelcomeModal(false);
+    setBalance(1); // 1 WGoal de bienvenida
+    localStorage.setItem("tribia_welcome_received", "true");
+    localStorage.setItem("tribia_last_login", new Date().toDateString());
+  };
+
+  const handleDailyRewardClaimed = () => {
+    setShowDailyModal(false);
     setBalance(prev => prev + 1);
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Cargando...</p>
+      </div>
+    );
+  }
+
   return (
     <>
+      {/* Modal de Bienvenida - Primer pago */}
+      <PaymentModal
+        open={showWelcomeModal}
+        onClose={() => {}}
+        amount={1}
+        description="🎉 ¡Bienvenido a Tribia!"
+        onSuccess={handleWelcomeComplete}
+      />
+
+      {/* Modal de Recompensa Diaria */}
       <DailyRewardModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        onSuccess={handleRewardClaimed}
+        open={showDailyModal}
+        onClose={() => setShowDailyModal(false)}
+        onSuccess={handleDailyRewardClaimed}
       />
 
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -56,7 +115,7 @@ export default function Dashboard() {
 
           {/* Sistema de Referidos */}
           <div className="mb-4">
-            <ReferralSystem walletAddress="0xABCD1234EFGH5678" />
+            <ReferralSystem walletAddress={user.address} />
           </div>
 
           {/* Botones de navegación */}
@@ -103,7 +162,7 @@ export default function Dashboard() {
           </div>
         </main>
 
-        <Footer userId="user-demo-123" />
+        <Footer userId={user.address} />
       </div>
     </>
   );

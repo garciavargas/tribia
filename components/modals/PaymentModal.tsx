@@ -1,30 +1,60 @@
 "use client";
 
+import { useState } from "react";
 import { Dialog, DialogContent, Button, Typography, Box, IconButton } from "@mui/material";
 import { FaCoins, FaTimes, FaExclamationCircle } from "react-icons/fa";
+import { MiniKit } from "@/lib/minikit";
 
 interface PaymentModalProps {
   open: boolean;
   onClose: () => void;
   amount: number;
   description: string;
+  onSuccess?: () => void;
 }
 
 export default function PaymentModal({ 
   open, 
   onClose,
   amount,
-  description
+  description,
+  onSuccess
 }: PaymentModalProps) {
-  const handlePay = () => {
-    alert(`💰 Pago de ${amount} WGoal\n\n${description}\n\n(Simulación - En producción usará MiniKit Pay)`);
-    onClose();
+  const [processing, setProcessing] = useState(false);
+
+  const handlePay = async () => {
+    setProcessing(true);
+    
+    try {
+      // @ts-expect-error - MiniKit types
+      const { finalPayload } = await MiniKit.commandsAsync.pay({
+        reference: `tribia-welcome-${Date.now()}`,
+        to: process.env.NEXT_PUBLIC_TREASURY_WALLET || "0x7400ffa080c63a689e56936d76752d252fc2ce68",
+        tokens: [{
+          symbol: "WLD",
+          token_amount: amount.toString()
+        }],
+        description: description
+      });
+
+      if (finalPayload.status === "success") {
+        onSuccess?.();
+        onClose();
+      } else {
+        alert("Pago cancelado");
+      }
+    } catch (error) {
+      console.error("Error en pago:", error);
+      alert("Error al procesar el pago");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
     <Dialog 
       open={open} 
-      onClose={onClose}
+      onClose={processing ? undefined : onClose}
       maxWidth="xs"
       fullWidth
       slotProps={{
@@ -40,20 +70,22 @@ export default function PaymentModal({
     >
       <DialogContent sx={{ p: 0, position: "relative" }}>
         {/* Close Button */}
-        <IconButton
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            right: 16,
-            top: 16,
-            bgcolor: "#e0e0e0",
-            width: 40,
-            height: 40,
-            "&:hover": { bgcolor: "#d0d0d0" }
-          }}
-        >
-          <FaTimes size={18} />
-        </IconButton>
+        {!processing && (
+          <IconButton
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              right: 16,
+              top: 16,
+              bgcolor: "#e0e0e0",
+              width: 40,
+              height: 40,
+              "&:hover": { bgcolor: "#d0d0d0" }
+            }}
+          >
+            <FaTimes size={18} />
+          </IconButton>
+        )}
 
         {/* Content */}
         <Box sx={{ p: 4, pt: 5 }}>
@@ -82,7 +114,7 @@ export default function PaymentModal({
               color: "#1a1a1a"
             }}
           >
-            Permitir transacción
+            Recibir WGoal
           </Typography>
 
           {/* Subtitle */}
@@ -93,7 +125,7 @@ export default function PaymentModal({
               mb: 3
             }}
           >
-            a Tribia
+            de Tribia
           </Typography>
 
           {/* Amount Section */}
@@ -151,16 +183,16 @@ export default function PaymentModal({
                 alignItems: "flex-start",
                 gap: 1,
                 p: 2,
-                bgcolor: "#fff3cd",
+                bgcolor: "#e8f5e9",
                 borderRadius: 2,
                 mb: 3
               }}
             >
-              <FaExclamationCircle size={16} color="#856404" style={{ marginTop: 2 }} />
+              <FaExclamationCircle size={16} color="#2e7d32" style={{ marginTop: 2 }} />
               <Typography 
                 variant="caption" 
                 sx={{ 
-                  color: "#856404",
+                  color: "#2e7d32",
                   fontSize: "0.85rem",
                   lineHeight: 1.5
                 }}
@@ -177,6 +209,7 @@ export default function PaymentModal({
               variant="outlined"
               size="large"
               onClick={onClose}
+              disabled={processing}
               sx={{ 
                 minHeight: 56,
                 borderRadius: 3,
@@ -198,6 +231,7 @@ export default function PaymentModal({
               variant="contained"
               size="large"
               onClick={handlePay}
+              disabled={processing}
               sx={{ 
                 minHeight: 56,
                 borderRadius: 3,
@@ -211,7 +245,7 @@ export default function PaymentModal({
                 }
               }}
             >
-              Permitir
+              {processing ? "Procesando..." : "Recibir"}
             </Button>
           </Box>
         </Box>

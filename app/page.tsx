@@ -73,8 +73,23 @@ export default function Home() {
         return;
       }
 
-      // @ts-expect-error - MiniKit types are not fully exported
-      const { commandPayload, finalPayload } = await MiniKit.commandsAsync.walletAuth({
+      // Paso 1: Verificar World ID (prueba de humanidad)
+      // @ts-expect-error - MiniKit types
+      const verifyResult = await MiniKit.commandsAsync.verify({
+        action: "tribia-signup",
+        signal: crypto.randomUUID(),
+        verification_level: "orb"
+      });
+
+      if (verifyResult.finalPayload.status !== "success") {
+        alert("Necesitas verificar tu identidad con World ID para jugar.");
+        setConnecting(false);
+        return;
+      }
+
+      // Paso 2: Conectar wallet
+      // @ts-expect-error - MiniKit types
+      const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
         nonce: Math.random().toString(36).substring(7),
         requestId: crypto.randomUUID(),
         expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -82,14 +97,22 @@ export default function Home() {
       });
 
       if (finalPayload.status === "success") {
+        // Guardar datos de usuario
+        localStorage.setItem("tribia_user", JSON.stringify({
+          address: finalPayload.address,
+          verified: true,
+          nullifierHash: verifyResult.finalPayload.nullifier_hash,
+          joinedAt: Date.now()
+        }));
+        
         router.push("/dashboard");
       } else {
-        alert("Error al conectar. Intenta de nuevo.");
+        alert("Error al conectar wallet. Intenta de nuevo.");
         setConnecting(false);
       }
     } catch (error) {
-      console.error("Error en Wallet Auth:", error);
-      alert(`Error al conectar con World ID: ${error}`);
+      console.error("Error en autenticación:", error);
+      alert(`Error: ${error}`);
       setConnecting(false);
     }
   };
