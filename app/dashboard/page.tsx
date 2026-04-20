@@ -8,58 +8,71 @@ import DailyRewardModal from "@/components/modals/DailyRewardModal";
 import PaymentModal from "@/components/modals/PaymentModal";
 import ReferralSystem from "@/components/ReferralSystem";
 import { getWGoalBalance } from "@/lib/rewards";
+import { getUser, hasClaimedDailyReward, getUserStreak } from "@/lib/database/users";
 
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [balance, setBalance] = useState(0);
-  const [streak] = useState(1);
+  const [streak, setStreak] = useState(0);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
-    // Verificar autenticación
-    const userData = localStorage.getItem("tribia_user");
-    
-    if (!userData) {
-      router.push("/");
-      return;
-    }
+    const initDashboard = async () => {
+      // Verificar autenticación
+      const userData = localStorage.getItem("tribia_user");
+      
+      if (!userData) {
+        router.push("/");
+        return;
+      }
 
-    const parsedUser = JSON.parse(userData);
-    setUser(parsedUser);
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
 
-    // Cargar balance real del contrato
-    const loadBalance = async () => {
+      // Cargar datos del usuario desde Firebase
+      const dbUser = await getUser(parsedUser.address);
+      
+      if (!dbUser) {
+        // Usuario no existe en Firebase, redirigir a home
+        router.push("/");
+        return;
+      }
+
+      // Cargar balance real del contrato
       const realBalance = await getWGoalBalance(parsedUser.address);
       setBalance(realBalance);
-    };
-    loadBalance();
 
-    // Verificar si es primera vez
-    const hasReceivedWelcome = localStorage.getItem("tribia_welcome_received");
-    
-    if (!hasReceivedWelcome) {
-      setShowWelcomeModal(true);
-    } else {
-      // Verificar login diario
-      const lastLogin = localStorage.getItem("tribia_last_login");
-      const today = new Date().toDateString();
-      
-      if (lastLogin !== today) {
-        setShowDailyModal(true);
-        localStorage.setItem("tribia_last_login", today);
+      // Cargar racha
+      const userStreak = await getUserStreak(parsedUser.address);
+      setStreak(userStreak);
+
+      // Verificar si es primera vez (no ha recibido bienvenida)
+      if (!dbUser.welcomeReceived) {
+        setShowWelcomeModal(true);
+      } else {
+        // Verificar si ya reclamó el reward diario de hoy
+        const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
+        
+        if (!alreadyClaimed) {
+          setShowDailyModal(true);
+        }
       }
-    }
+    };
+
+    initDashboard();
   }, [router]);
 
   const handleWelcomeComplete = async () => {
     setShowWelcomeModal(false);
-    localStorage.setItem("tribia_welcome_received", "true");
-    localStorage.setItem("tribia_last_login", new Date().toDateString());
     
-    // Recargar balance real
     if (user) {
+      // Marcar bienvenida como recibida en Firebase
+      const { markWelcomeReceived } = await import("@/lib/database/users");
+      await markWelcomeReceived(user.address);
+      
+      // Recargar balance real
       const realBalance = await getWGoalBalance(user.address);
       setBalance(realBalance);
     }
@@ -68,10 +81,14 @@ export default function Dashboard() {
   const handleDailyRewardClaimed = async () => {
     setShowDailyModal(false);
     
-    // Recargar balance real
     if (user) {
+      // Recargar balance real
       const realBalance = await getWGoalBalance(user.address);
       setBalance(realBalance);
+      
+      // Recargar racha
+      const userStreak = await getUserStreak(user.address);
+      setStreak(userStreak);
     }
   };
 

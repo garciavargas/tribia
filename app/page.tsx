@@ -97,13 +97,25 @@ export default function Home() {
       });
 
       if (finalPayload.status === "success") {
-        // Guardar datos de usuario
+        // Guardar datos de usuario en localStorage
         localStorage.setItem("tribia_user", JSON.stringify({
           address: finalPayload.address,
           verified: true,
           nullifierHash: verifyResult.finalPayload.nullifier_hash,
           joinedAt: Date.now()
         }));
+        
+        // Crear usuario en Firebase
+        const { createUser, getUser } = await import("@/lib/database/users");
+        const existingUser = await getUser(finalPayload.address);
+        
+        if (!existingUser) {
+          await createUser(
+            finalPayload.address,
+            verifyResult.finalPayload.verification_level,
+            verifyResult.finalPayload.nullifier_hash
+          );
+        }
         
         router.push("/dashboard");
       } else {

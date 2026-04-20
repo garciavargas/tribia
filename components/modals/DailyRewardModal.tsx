@@ -28,6 +28,10 @@ export default function DailyRewardModal({ open, onClose, onSuccess, userAddress
       const success = await distributeDailyReward(userAddress);
       
       if (success) {
+        // Registrar en Firebase
+        const { recordDailyReward } = await import("@/lib/database/users");
+        await recordDailyReward(userAddress, "tx-hash-placeholder");
+        
         toast.success("¡Recompensa reclamada! +1 WGoal");
         onSuccess();
       } else {
