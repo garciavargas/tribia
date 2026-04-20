@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DailyRewardModal from "@/components/modals/DailyRewardModal";
+import ReferralSystem from "@/components/ReferralSystem";
 
 export default function Dashboard() {
   const [balance, setBalance] = useState(0);
@@ -51,6 +52,11 @@ export default function Dashboard() {
             <div className="bg-white rounded-lg p-4 shadow text-center text-gray-500">
               <p>Los partidos se cargarán próximamente</p>
             </div>
+          </div>
+
+          {/* Sistema de Referidos */}
+          <div className="mb-4">
+            <ReferralSystem walletAddress="0xABCD1234EFGH5678" />
           </div>
 
           {/* Botones de navegación */}

@@ -3,18 +3,40 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/components/LoadingScreen";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Container, Card, CardContent, Chip } from "@mui/material";
 import { MiniKit, isMiniKitAvailable } from "@/lib/minikit";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [miniKitReady, setMiniKitReady] = useState(false);
-  const [debugInfo, setDebugInfo] = useState("");
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
   const router = useRouter();
 
   useEffect(() => {
-    // Verificar MiniKit múltiples veces
+    // Countdown hasta el Mundial (11 de junio 2026)
+    const worldCupDate = new Date('2026-06-11T00:00:00');
+    
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = worldCupDate.getTime() - now.getTime();
+      
+      if (diff > 0) {
+        setCountdown({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        });
+      }
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     let attempts = 0;
     const maxAttempts = 10;
     
@@ -22,18 +44,13 @@ export default function Home() {
       attempts++;
       const isAvailable = isMiniKitAvailable();
       
-      setDebugInfo(`Intento ${attempts}: ${isAvailable ? "✅" : "❌"}`);
-      
       if (isAvailable) {
         setMiniKitReady(true);
-        console.log("✅ MiniKit listo");
         return true;
       }
       
       if (attempts < maxAttempts) {
         setTimeout(checkMiniKit, 500);
-      } else {
-        console.log("❌ MiniKit no disponible después de", maxAttempts, "intentos");
       }
       
       return false;
@@ -64,8 +81,6 @@ export default function Home() {
         statement: "Inicia sesión en Tribia para predecir el Mundial 2026"
       });
 
-      console.log("Wallet Auth response:", finalPayload);
-
       if (finalPayload.status === "success") {
         router.push("/dashboard");
       } else {
@@ -79,75 +94,193 @@ export default function Home() {
     }
   };
 
-  // Botón temporal para ir directo al dashboard (SOLO PARA DEBUG)
-  const handleSkipToDashboard = () => {
-    router.push("/dashboard");
-  };
-
   if (loading) {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 2,
-        bgcolor: "grey.50"
-      }}
-    >
-      <Box sx={{ textAlign: "center", maxWidth: 400 }}>
-        <Typography variant="h3" sx={{ fontWeight: "bold", color: "primary.main", mb: 2 }}>
-          ⚽ Bienvenido a Tribia Futbolera
-        </Typography>
-        <Typography variant="body1" sx={{ color: "text.secondary", mb: 2 }}>
-          Predice resultados del Mundial 2026 y gana WGoal
+    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50", py: 4 }}>
+      <Container maxWidth="md">
+        {/* Hero Section */}
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography variant="h2" sx={{ fontWeight: "bold", color: "primary.main", mb: 2, fontSize: { xs: "2rem", md: "3rem" } }}>
+            ⚽ Tribia Futbolera
+          </Typography>
+          <Typography variant="h5" sx={{ color: "text.secondary", mb: 3, fontWeight: 500 }}>
+            Predice el Mundial 2026 y gana tokens WGoal
+          </Typography>
+          
+          {/* Countdown */}
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4 }}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography variant="h3" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                {countdown.days}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>días</Typography>
+            </Box>
+            <Typography variant="h3" sx={{ color: "text.secondary" }}>:</Typography>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography variant="h3" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                {countdown.hours}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>horas</Typography>
+            </Box>
+            <Typography variant="h3" sx={{ color: "text.secondary" }}>:</Typography>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography variant="h3" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                {countdown.minutes}
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>min</Typography>
+            </Box>
+          </Box>
+
+          {/* Stats */}
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 3, mb: 4, flexWrap: "wrap" }}>
+            <Chip label="🎮 1,247 jugadores" color="primary" />
+            <Chip label="💰 45,890 WGoal distribuidos" color="success" />
+            <Chip label="🏆 48 partidos disponibles" color="secondary" />
+          </Box>
+        </Box>
+
+        {/* Cómo Funciona */}
+        <Typography variant="h5" sx={{ fontWeight: "bold", textAlign: "center", mb: 3 }}>
+          ¿Cómo funciona?
         </Typography>
         
-        {!miniKitReady && (
-          <Typography variant="body2" sx={{ color: "warning.main", mb: 2, fontSize: "0.875rem" }}>
-            ⚠️ Abre esta app desde Worldcoin para conectar
-          </Typography>
-        )}
-
-        <Button
-          variant="contained"
-          size="large"
-          fullWidth
-          onClick={handleConnect}
-          disabled={connecting || !miniKitReady}
-          sx={{ minHeight: 44, mb: 2 }}
-        >
-          {connecting ? "Conectando..." : "Conectar con World ID"}
-        </Button>
-
-        {/* Botón temporal de debug */}
-        <Button
-          variant="outlined"
-          size="small"
-          fullWidth
-          onClick={handleSkipToDashboard}
-          sx={{ minHeight: 44, mb: 2 }}
-        >
-          🔧 Ir al Dashboard (Debug)
-        </Button>
-
-        {/* Debug info */}
-        <Box sx={{ mt: 2, p: 2, bgcolor: "grey.100", borderRadius: 2 }}>
-          <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-            MiniKit: {miniKitReady ? "✅ Listo" : "❌ No disponible"}
-          </Typography>
-          <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
-            {debugInfo}
-          </Typography>
-          <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 1 }}>
-            App ID: {process.env.NEXT_PUBLIC_APP_ID?.substring(0, 20)}...
-          </Typography>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 6 }}>
+          <Box sx={{ flex: 1 }}>
+            <Card sx={{ height: "100%", textAlign: "center", p: 2 }}>
+              <Typography sx={{ fontSize: 60, mb: 2 }}>🔐</Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                1. Verifica tu identidad
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Conecta con World ID para acceder al juego de forma segura
+              </Typography>
+            </Card>
+          </Box>
+          
+          <Box sx={{ flex: 1 }}>
+            <Card sx={{ height: "100%", textAlign: "center", p: 2 }}>
+              <Typography sx={{ fontSize: 60, mb: 2 }}>⚽</Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                2. Haz tus predicciones
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Predice resultados de partidos antes de que comiencen
+              </Typography>
+            </Card>
+          </Box>
+          
+          <Box sx={{ flex: 1 }}>
+            <Card sx={{ height: "100%", textAlign: "center", p: 2 }}>
+              <Typography sx={{ fontSize: 60, mb: 2 }}>💰</Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                3. Gana WGoal
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Recibe 5 WGoal por cada predicción correcta + 1 WGoal diario
+              </Typography>
+            </Card>
+          </Box>
         </Box>
-      </Box>
+
+        {/* Preview de Partidos */}
+        <Typography variant="h5" sx={{ fontWeight: "bold", textAlign: "center", mb: 3 }}>
+          Próximos partidos
+        </Typography>
+        
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 6 }}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box sx={{ textAlign: "center", flex: 1 }}>
+                  <Typography variant="h4">🇲🇽</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>México</Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", px: 2 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                    11 Jun • 12:00
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                    VS
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", flex: 1 }}>
+                  <Typography variant="h4">🇿🇦</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Sudáfrica</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2, textAlign: "center" }}>
+                <Chip label="🏆 5 WGoal por acierto" size="small" color="success" />
+              </Box>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box sx={{ textAlign: "center", flex: 1 }}>
+                  <Typography variant="h4">🇧🇷</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Brasil</Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", px: 2 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                    11 Jun • 15:00
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                    VS
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "center", flex: 1 }}>
+                  <Typography variant="h4">🇲🇦</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Marruecos</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2, textAlign: "center" }}>
+                <Chip label="🏆 5 WGoal por acierto" size="small" color="success" />
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Premio Final */}
+        <Card sx={{ bgcolor: "primary.main", color: "white", mb: 6, p: 3, textAlign: "center" }}>
+          <Typography sx={{ fontSize: 60, mb: 2 }}>🏆</Typography>
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
+            🎰 PREMIO GORDO: 100,000 WGoal
+          </Typography>
+          <Typography variant="body1">
+            Predice el campeón + resultado exacto de la final
+          </Typography>
+        </Card>
+
+        {/* CTA */}
+        <Box sx={{ textAlign: "center" }}>
+          {!miniKitReady && (
+            <Typography variant="body2" sx={{ color: "warning.main", mb: 2 }}>
+              ⚠️ Abre esta app desde Worldcoin para conectar
+            </Typography>
+          )}
+          
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            onClick={handleConnect}
+            disabled={connecting || !miniKitReady}
+            sx={{ 
+              minHeight: 56, 
+              fontSize: "1.1rem",
+              fontWeight: "bold",
+              maxWidth: 400,
+              mx: "auto"
+            }}
+          >
+            {connecting ? "Conectando..." : "🚀 Empezar a Jugar"}
+          </Button>
+        </Box>
+      </Container>
     </Box>
   );
 }

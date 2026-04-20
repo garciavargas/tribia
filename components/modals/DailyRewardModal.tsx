@@ -3,25 +3,42 @@
 import { useState } from "react";
 import { Dialog, DialogContent, Button, Box, Typography, IconButton } from "@mui/material";
 import { FaTimes, FaGift } from "react-icons/fa";
+import { distributeDailyReward } from "@/lib/rewards";
+import toast from "react-hot-toast";
 
 interface DailyRewardModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  userAddress?: string;
 }
 
-export default function DailyRewardModal({ open, onClose, onSuccess }: DailyRewardModalProps) {
+export default function DailyRewardModal({ open, onClose, onSuccess, userAddress }: DailyRewardModalProps) {
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
+    if (!userAddress) {
+      toast.error("Wallet no conectada");
+      return;
+    }
+
     setLoading(true);
     
-    // Simulación temporal
-    setTimeout(() => {
-      alert("¡Recompensa reclamada! +1 WGoal");
+    try {
+      const success = await distributeDailyReward(userAddress);
+      
+      if (success) {
+        toast.success("¡Recompensa reclamada! +1 WGoal");
+        onSuccess();
+      } else {
+        toast.error("Error al reclamar recompensa");
+      }
+    } catch (error) {
+      console.error("Error claiming reward:", error);
+      toast.error("Error al reclamar recompensa");
+    } finally {
       setLoading(false);
-      onSuccess();
-    }, 1000);
+    }
   };
 
   return (

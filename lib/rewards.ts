@@ -1,0 +1,118 @@
+import { MiniKit } from "@/lib/minikit";
+import { TRIBIA_CONFIG } from "./config";
+import { WGOAL_ABI } from "./token";
+
+/**
+ * Envía tokens WGOAL a un usuario
+ */
+export async function sendWGoal(
+  recipientAddress: string,
+  amount: number
+): Promise<{ success: boolean; txHash?: string; error?: string }> {
+  try {
+    // Convertir amount a wei (18 decimales)
+    const amountInWei = BigInt(amount) * BigInt(10 ** 18);
+
+    // @ts-expect-error - MiniKit types
+    const { finalPayload } = await MiniKit.commandsAsync.sendTransaction({
+      transaction: [
+        {
+          address: TRIBIA_CONFIG.token.address,
+          abi: WGOAL_ABI,
+          functionName: "transfer",
+          args: [recipientAddress, amountInWei.toString()]
+        }
+      ]
+    });
+
+    if (finalPayload.status === "success") {
+      return {
+        success: true,
+        txHash: finalPayload.transaction_hash
+      };
+    }
+
+    return {
+      success: false,
+      error: "Transaction failed"
+    };
+  } catch (error) {
+    console.error("Error sending WGOAL:", error);
+    return {
+      success: false,
+      error: String(error)
+    };
+  }
+}
+
+/**
+ * Obtiene el balance de WGOAL de un usuario
+ */
+export async function getWGoalBalance(
+  walletAddress: string
+): Promise<number> {
+  try {
+    // TODO: Implementar lectura del balance desde el contrato
+    // Por ahora retorna 0
+    return 0;
+  } catch (error) {
+    console.error("Error getting balance:", error);
+    return 0;
+  }
+}
+
+/**
+ * Distribuye recompensa diaria (1 WGOAL)
+ */
+export async function distributeDailyReward(
+  userAddress: string
+): Promise<boolean> {
+  const result = await sendWGoal(userAddress, 1);
+  return result.success;
+}
+
+/**
+ * Distribuye recompensa por predicción correcta (5 WGOAL)
+ */
+export async function distributePredictionReward(
+  userAddress: string
+): Promise<boolean> {
+  const result = await sendWGoal(userAddress, 5);
+  return result.success;
+}
+
+/**
+ * Distribuye recompensa por referido (5 WGOAL a cada uno)
+ */
+export async function distributeReferralReward(
+  referrerAddress: string,
+  referredAddress: string
+): Promise<{ referrer: boolean; referred: boolean }> {
+  const referrerResult = await sendWGoal(referrerAddress, 5);
+  const referredResult = await sendWGoal(referredAddress, 5);
+
+  return {
+    referrer: referrerResult.success,
+    referred: referredResult.success
+  };
+}
+
+/**
+ * Distribuye premio final (10,000 WGOAL)
+ */
+export async function distributeFinalPrize(
+  userAddress: string
+): Promise<boolean> {
+  const result = await sendWGoal(userAddress, 10000);
+  return result.success;
+}
+
+/**
+ * Distribuye premio gordo (100,000 WGOAL)
+ */
+export async function distributeJackpot(
+  userAddress: string
+): Promise<boolean> {
+  const result = await sendWGoal(userAddress, 100000);
+  return result.success;
+}
