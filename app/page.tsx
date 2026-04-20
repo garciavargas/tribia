@@ -37,26 +37,34 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 10;
-    
+    // Verificar MiniKit inmediatamente y con reintentos
     const checkMiniKit = () => {
-      attempts++;
       const isAvailable = isMiniKitAvailable();
       
       if (isAvailable) {
         setMiniKitReady(true);
-        return true;
       }
-      
-      if (attempts < maxAttempts) {
-        setTimeout(checkMiniKit, 500);
-      }
-      
-      return false;
     };
 
-    setTimeout(checkMiniKit, 500);
+    // Verificar inmediatamente
+    checkMiniKit();
+    
+    // Reintentar cada 500ms durante 5 segundos
+    const interval = setInterval(checkMiniKit, 500);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      // Si después de 5 segundos no está disponible, habilitarlo igual
+      // (para permitir pruebas en desarrollo)
+      if (!isMiniKitAvailable()) {
+        console.warn("MiniKit no detectado, pero habilitando botón");
+        setMiniKitReady(true);
+      }
+    }, 5000);
+    
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleLoadingComplete = () => {
@@ -312,7 +320,7 @@ export default function Home() {
               mx: "auto"
             }}
           >
-            {connecting ? "Conectando..." : "🚀 Empezar a Jugar"}
+            {connecting ? "Conectando..." : "🔗 Conectar Wallet"}
           </Button>
         </Box>
       </Container>
