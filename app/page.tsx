@@ -10,17 +10,35 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [miniKitReady, setMiniKitReady] = useState(false);
+  const [debugInfo, setDebugInfo] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    // Verificar si MiniKit está disponible después de que se cargue
+    // Verificar MiniKit múltiples veces
+    let attempts = 0;
+    const maxAttempts = 10;
+    
     const checkMiniKit = () => {
+      attempts++;
       const isAvailable = isMiniKitAvailable();
-      setMiniKitReady(isAvailable);
-      console.log("MiniKit disponible:", isAvailable);
+      
+      setDebugInfo(`Intento ${attempts}: ${isAvailable ? "✅" : "❌"}`);
+      
+      if (isAvailable) {
+        setMiniKitReady(true);
+        console.log("✅ MiniKit listo");
+        return true;
+      }
+      
+      if (attempts < maxAttempts) {
+        setTimeout(checkMiniKit, 500);
+      } else {
+        console.log("❌ MiniKit no disponible después de", maxAttempts, "intentos");
+      }
+      
+      return false;
     };
 
-    // Esperar un poco para que MiniKit se inicialice
     setTimeout(checkMiniKit, 500);
   }, []);
 
@@ -61,6 +79,11 @@ export default function Home() {
     }
   };
 
+  // Botón temporal para ir directo al dashboard (SOLO PARA DEBUG)
+  const handleSkipToDashboard = () => {
+    router.push("/dashboard");
+  };
+
   if (loading) {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
@@ -96,15 +119,34 @@ export default function Home() {
           fullWidth
           onClick={handleConnect}
           disabled={connecting || !miniKitReady}
-          sx={{ minHeight: 44 }}
+          sx={{ minHeight: 44, mb: 2 }}
         >
           {connecting ? "Conectando..." : "Conectar con World ID"}
         </Button>
 
-        {/* Debug info (remover en producción) */}
-        <Typography variant="caption" sx={{ display: "block", mt: 2, color: "text.disabled" }}>
-          MiniKit: {miniKitReady ? "✅ Listo" : "❌ No disponible"}
-        </Typography>
+        {/* Botón temporal de debug */}
+        <Button
+          variant="outlined"
+          size="small"
+          fullWidth
+          onClick={handleSkipToDashboard}
+          sx={{ minHeight: 44, mb: 2 }}
+        >
+          🔧 Ir al Dashboard (Debug)
+        </Button>
+
+        {/* Debug info */}
+        <Box sx={{ mt: 2, p: 2, bgcolor: "grey.100", borderRadius: 2 }}>
+          <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+            MiniKit: {miniKitReady ? "✅ Listo" : "❌ No disponible"}
+          </Typography>
+          <Typography variant="caption" sx={{ display: "block", color: "text.secondary" }}>
+            {debugInfo}
+          </Typography>
+          <Typography variant="caption" sx={{ display: "block", color: "text.secondary", mt: 1 }}>
+            App ID: {process.env.NEXT_PUBLIC_APP_ID?.substring(0, 20)}...
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );

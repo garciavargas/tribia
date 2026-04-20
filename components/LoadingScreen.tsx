@@ -14,7 +14,7 @@ const SLIDES = [
     subtitle: "Conecta con World ID"
   },
   {
-    image: "/paginatoken.png",
+    image: "/pagina3.png",
     title: "1 WGoal Gratis Diario",
     subtitle: "Inicia sesión cada día"
   }
