@@ -157,6 +157,28 @@ export default function Dashboard() {
           {/* Botones de navegación */}
           <div className="space-y-3">
             <a
+              href="/jackpot"
+              className="
+                block
+                w-full
+                min-h-[60px]
+                px-6
+                py-4
+                bg-gradient-to-r from-purple-600 to-pink-600
+                text-white
+                text-center
+                font-bold
+                text-lg
+                rounded-lg
+                active:scale-95
+                transition-transform
+                shadow-lg
+              "
+            >
+              🎰 PREMIO GORDO - 1,000,000 WGoal
+            </a>
+
+            <a
               href="/groups"
               className="
                 block

@@ -46,13 +46,15 @@ export interface Prediction {
 export interface FinalPrediction {
   predictionId: string;          // Primary key
   userId: string;                // Foreign key → Users (walletAddress)
-  champion: string;              // Equipo ganador
+  teamA: string;                 // Equipo A en la final
+  teamB: string;                 // Equipo B en la final
+  champion: string;              // Equipo ganador predicho
   decidedBy: "normal" | "extra" | "penalties";
-  homeScore?: number;            // Solo para premio gordo
-  awayScore?: number;            // Solo para premio gordo
+  scoreA: number;                // Marcador equipo A (90 min)
+  scoreB: number;                // Marcador equipo B (90 min)
   timestamp: string;             // ISO string - Para orden de llegada
   isCorrect?: boolean;
-  rewardAmount?: number;         // 10k o 100k
+  rewardAmount?: number;         // Parte del 1,000,000 WGoal
   rewardClaimed: boolean;
   txHash?: string;               // Hash de la transacción de recompensa
 }
