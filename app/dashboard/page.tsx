@@ -18,6 +18,8 @@ export default function Dashboard() {
     const initDashboard = async () => {
       const userData = localStorage.getItem("tribia_user");
       
+      console.log("1. userData:", userData);
+      
       if (!userData) {
         router.push("/");
         return;
@@ -25,19 +27,29 @@ export default function Dashboard() {
 
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
+      
+      console.log("2. parsedUser:", parsedUser);
 
       const dbUser = await getUser(parsedUser.address);
+      
+      console.log("3. dbUser:", dbUser);
       
       if (!dbUser) {
         router.push("/");
         return;
       }
 
+      console.log("4. welcomeReceived:", dbUser.welcomeReceived);
+
       if (!dbUser.welcomeReceived) {
+        console.log("5. Mostrando modal de bienvenida");
         setShowWelcomeModal(true);
       } else {
+        console.log("6. Verificando daily reward");
         const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
+        console.log("7. alreadyClaimed:", alreadyClaimed);
         if (!alreadyClaimed) {
+          console.log("8. Mostrando modal daily");
           setShowDailyModal(true);
         }
       }
