@@ -26,8 +26,7 @@ export default function PaymentModal({
     setProcessing(true);
     
     try {
-      // @ts-expect-error - MiniKit types - WGOAL es token custom
-      const { finalPayload } = await MiniKit.pay({
+      const payResult = await MiniKit.pay({
         reference: `tribia-welcome-${Date.now()}`,
         to: process.env.NEXT_PUBLIC_TREASURY_WALLET || "0x7400ffa080c63a689e56936d76752d252fc2ce68",
         tokens: [{
@@ -37,15 +36,26 @@ export default function PaymentModal({
         description: description
       });
 
-      if (finalPayload.status === "success") {
+      if (payResult.executedWith === "fallback") {
+        const toast = (await import("react-hot-toast")).default;
+        toast.error("Debes usar World App para realizar pagos");
+        setProcessing(false);
+        return;
+      }
+
+      if (payResult.data?.transactionId) {
+        const toast = (await import("react-hot-toast")).default;
+        toast.success("¡Pago recibido exitosamente!");
         onSuccess?.();
         onClose();
       } else {
-        alert("Pago cancelado");
+        const toast = (await import("react-hot-toast")).default;
+        toast.error("Pago cancelado");
       }
     } catch (error) {
       console.error("Error en pago:", error);
-      alert("Error al procesar el pago");
+      const toast = (await import("react-hot-toast")).default;
+      toast.error("Error al procesar el pago");
     } finally {
       setProcessing(false);
     }
