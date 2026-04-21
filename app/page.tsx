@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LoadingScreen from "@/components/LoadingScreen";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ModalInicio from "@/components/modals/ModalInicio";
 import { MiniKit, isMiniKitAvailable } from "@/lib/minikit";
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [miniKitReady, setMiniKitReady] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,11 +43,6 @@ export default function Home() {
       clearTimeout(timeout);
     };
   }, []);
-
-  const handleLoadingComplete = () => {
-    setLoading(false);
-    setShowModal(true);
-  };
 
   const handleConnect = async () => {
     setConnecting(true);
@@ -207,15 +200,13 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return <LoadingScreen onComplete={handleLoadingComplete} />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header isGuest />
       
       <main className="flex-1 flex items-center justify-center p-4">
+        <h1 className="text-4xl font-bold">Home</h1>
+        
         <ModalInicio 
           open={showModal} 
           onConnect={handleConnect}
