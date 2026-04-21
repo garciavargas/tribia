@@ -62,84 +62,101 @@ export default function Home() {
         return;
       }
 
-      // Validar variables de entorno
-      const appId = process.env.NEXT_PUBLIC_APP_ID;
-      const rpId = process.env.NEXT_PUBLIC_RP_ID;
-      
-      console.log("App ID:", appId);
-      console.log("RP ID:", rpId);
-      
-      if (!appId || !rpId) {
-        const toast = (await import("react-hot-toast")).default;
-        toast.error(`Error de configuración: ${!appId ? 'APP_ID' : 'RP_ID'} no está definido`);
-        setConnecting(false);
-        return;
-      }
-
       const toast = (await import("react-hot-toast")).default;
-      toast.loading("Verificando identidad...", { id: "auth" });
-
-      // Paso 1: Verificar World ID con IDKit 4.0
-      const { IDKit, orbLegacy } = await import("@worldcoin/idkit-core");
-      
-      // Obtener RP signature del backend
-      const rpSig = await fetch("/api/rp-signature", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "tribia-signup" }),
-      }).then((r) => r.json());
-
-      // Crear request de verificación
-      const request = await IDKit.request({
-        app_id: appId as `app_${string}`,
-        action: "tribia-signup",
-        rp_context: {
-          rp_id: rpId as `rp_${string}`,
-          nonce: rpSig.nonce,
-          created_at: rpSig.created_at,
-          expires_at: rpSig.expires_at,
-          signature: rpSig.sig,
-        },
-        allow_legacy_proofs: true,
-        environment: "production",
-      }).preset(orbLegacy({ signal: crypto.randomUUID() }));
-
-      // Obtener proof del usuario
-      const idkitResponse = await request.pollUntilCompletion();
-
-      // Verificar proof en backend
-      const verifyResult = await fetch("/api/verify-proof", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ idkitResponse }),
-      }).then((r) => r.json());
-
-      if (!verifyResult.success) {
-        toast.error("Verificación fallida. Intenta de nuevo.", { id: "auth" });
-        setConnecting(false);
-        return;
-      }
-
       toast.loading("Conectando wallet...", { id: "auth" });
 
-      // Paso 2: Conectar wallet
+      // Generar nonce único
+      const nonce = crypto.randomUUID();
+      const requestId = crypto.randomUUID();
+      const expirationTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      console.log("Iniciando Wallet Auth con:", { nonce, requestId });
+
+      // Conectar wallet con MiniKit
       const walletAuthResult = await MiniKit.walletAuth({
-        nonce: Math.random().toString(36).substring(7),
-        requestId: crypto.randomUUID(),
-        expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        nonce,
+        requestId,
+        expirationTime,
         statement: "Inicia sesión en Tribia para predecir el Mundial 2026"
       });
 
+      console.log("Wallet Auth Result:", walletAuthResult);
+
+      // Verificar si se ejecutó con fallback (no está en World App)
       if (walletAuthResult.executedWith === "fallback") {
         toast.error("Debes usar World App para conectar", { id: "auth" });
         setConnecting(false);
         return;
       }
 
-      if (walletAuthResult.data?.address) {
+      // Verificar si tenemos la dirección de la wallet
+      if (!walletAuthResult.data?.address) {
+        toast.error("No se pudo obtener la dirección de la wallet", { id: "auth" });
+        setConnecting(false);
+        return;
+      }
+
+      const address = walletAuthResult.data.address;
+      console.log("Wallet conectada:", address);
+
+      toast.loading("Verificando identidad...", { id: "auth" });
+
+      // Verificar World ID con IDKit 4.0
+      try {
+        const { IDKit, orbLegacy } = await import("@worldcoin/idkit-core");
+        
+        const appId = process.env.NEXT_PUBLIC_APP_ID;
+        const rpId = process.env.NEXT_PUBLIC_RP_ID;
+        
+        if (!appId || !rpId) {
+          throw new Error(`Configuración faltante: ${!appId ? 'APP_ID' : 'RP_ID'}`);
+        }
+
+        // Obtener RP signature del backend
+        const rpSig = await fetch("/api/rp-signature", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "tribia-signup" }),
+        }).then((r) => r.json());
+
+        if (!rpSig.sig) {
+          throw new Error("No se pudo obtener la firma RP");
+        }
+
+        // Crear request de verificación
+        const request = await IDKit.request({
+          app_id: appId as `app_${string}`,
+          action: "tribia-signup",
+          rp_context: {
+            rp_id: rpId as `rp_${string}`,
+            nonce: rpSig.nonce,
+            created_at: rpSig.created_at,
+            expires_at: rpSig.expires_at,
+            signature: rpSig.sig,
+          },
+          allow_legacy_proofs: true,
+          environment: "production",
+        }).preset(orbLegacy({ signal: crypto.randomUUID() }));
+
+        // Obtener proof del usuario
+        const idkitResponse = await request.pollUntilCompletion();
+
+        // Verificar proof en backend
+        const verifyResult = await fetch("/api/verify-proof", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ idkitResponse }),
+        }).then((r) => r.json());
+
+        if (!verifyResult.success) {
+          toast.error("Verificación de World ID fallida", { id: "auth" });
+          setConnecting(false);
+          return;
+        }
+
         // Guardar datos de usuario en localStorage
         localStorage.setItem("tribia_user", JSON.stringify({
-          address: walletAuthResult.data.address,
+          address,
           verified: true,
           nullifierHash: verifyResult.nullifier,
           joinedAt: Date.now()
@@ -147,11 +164,11 @@ export default function Home() {
         
         // Crear usuario en Firebase
         const { createUser, getUser } = await import("@/lib/database/users");
-        const existingUser = await getUser(walletAuthResult.data.address);
+        const existingUser = await getUser(address);
         
         if (!existingUser) {
           await createUser(
-            walletAuthResult.data.address,
+            address,
             "orb",
             verifyResult.nullifier
           );
@@ -162,14 +179,30 @@ export default function Home() {
         setTimeout(() => {
           router.push("/dashboard");
         }, 500);
-      } else {
-        toast.error("Error al conectar wallet. Intenta de nuevo.", { id: "auth" });
-        setConnecting(false);
+
+      } catch (verifyError) {
+        console.error("Error en verificación World ID:", verifyError);
+        
+        // Si falla la verificación pero tenemos la wallet, permitir acceso temporal
+        toast.success("Wallet conectada (verificación pendiente)", { id: "auth" });
+        
+        localStorage.setItem("tribia_user", JSON.stringify({
+          address,
+          verified: false,
+          nullifierHash: null,
+          joinedAt: Date.now()
+        }));
+        
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 500);
       }
+
     } catch (error) {
       console.error("Error en autenticación:", error);
       const toast = (await import("react-hot-toast")).default;
-      toast.error(`Error: ${error}`, { id: "auth" });
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      toast.error(`Error: ${errorMessage}`, { id: "auth" });
       setConnecting(false);
     }
   };
