@@ -1,19 +1,34 @@
 "use client";
 
 interface FooterProps {
-  userId: string;
+  userId?: string;
+  isGuest?: boolean;
 }
 
-export default function Footer({ userId }: FooterProps) {
+export default function Footer({ userId, isGuest = false }: FooterProps) {
+  if (isGuest) {
+    return (
+      <footer className="bg-white border-t">
+        <div className="p-4">
+          <p className="text-center text-xs text-gray-500">
+            © 2026 Tribia. Mundial 2026
+          </p>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="bg-white border-t">
       <div className="p-4">
         {/* Usuario */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-sm text-gray-600">
-            Usuario: <span className="font-mono">{userId.slice(0, 12)}...</span>
+        {userId && (
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-gray-600">
+              Usuario: <span className="font-mono">{userId.slice(0, 12)}...</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Botón de referidos */}
         <a

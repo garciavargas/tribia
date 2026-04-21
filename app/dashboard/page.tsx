@@ -157,6 +157,26 @@ export default function Dashboard() {
           {/* Botones de navegación */}
           <div className="space-y-3">
             <a
+              href="/my-predictions"
+              className="
+                block
+                w-full
+                min-h-[44px]
+                px-6
+                py-3
+                bg-gradient-to-r from-blue-500 to-blue-600
+                text-white
+                text-center
+                font-bold
+                rounded-lg
+                active:scale-95
+                transition-transform
+              "
+            >
+              📊 Mi Historial de Predicciones
+            </a>
+
+            <a
               href="/jackpot"
               className="
                 block

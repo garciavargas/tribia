@@ -22,7 +22,7 @@ export async function sendWGoal(
     const amountInWei = BigInt(Math.floor(amount)) * BigInt(10 ** 18);
 
     // @ts-expect-error - MiniKit types
-    const { finalPayload } = await MiniKit.commandsAsync.sendTransaction({
+    const { finalPayload } = await MiniKit.sendTransaction({
       transaction: [
         {
           address: TRIBIA_CONFIG.token.address,
@@ -66,7 +66,7 @@ export async function getWGoalBalance(
     }
 
     // @ts-expect-error - MiniKit types
-    const result = await MiniKit.commandsAsync.sendTransaction({
+    const result = await MiniKit.sendTransaction({
       transaction: [
         {
           address: TRIBIA_CONFIG.token.address,
