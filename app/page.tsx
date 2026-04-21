@@ -65,9 +65,9 @@ export default function Home() {
       const toast = (await import("react-hot-toast")).default;
       toast.loading("Conectando wallet...", { id: "auth" });
 
-      // Generar nonce único
-      const nonce = crypto.randomUUID();
-      const requestId = crypto.randomUUID();
+      // Generar nonce alfanumérico (sin guiones)
+      const nonce = crypto.randomUUID().replace(/-/g, '');
+      const requestId = crypto.randomUUID().replace(/-/g, '');
       const expirationTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
       console.log("Iniciando Wallet Auth con:", { nonce, requestId });
