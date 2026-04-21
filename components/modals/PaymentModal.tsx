@@ -26,36 +26,36 @@ export default function PaymentModal({
     setProcessing(true);
     
     try {
-      const payResult = await MiniKit.pay({
-        reference: `tribia-welcome-${Date.now()}`,
-        to: process.env.NEXT_PUBLIC_TREASURY_WALLET || "0x7400ffa080c63a689e56936d76752d252fc2ce68",
-        tokens: [{
-          symbol: "WGOAL" as any,
-          token_amount: amount.toString()
-        }],
-        description: description
+      // Para el modal de bienvenida, el backend envía WGoal al usuario
+      // No usamos MiniKit.pay porque eso es para que el usuario PAGUE
+      
+      const toast = (await import("react-hot-toast")).default;
+      toast.loading("Recibiendo tu WGoal de bienvenida...", { id: "welcome" });
+
+      // Llamar al backend para que envíe el WGoal
+      const response = await fetch("/api/send-welcome-reward", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress: localStorage.getItem("tribia_user") 
+            ? JSON.parse(localStorage.getItem("tribia_user")!).address 
+            : null
+        })
       });
 
-      if (payResult.executedWith === "fallback") {
-        const toast = (await import("react-hot-toast")).default;
-        toast.error("Debes usar World App para realizar pagos");
-        setProcessing(false);
-        return;
-      }
+      const result = await response.json();
 
-      if (payResult.data?.transactionId) {
-        const toast = (await import("react-hot-toast")).default;
-        toast.success("¡Pago recibido exitosamente!");
+      if (result.success) {
+        toast.success("¡Recibiste 1 WGoal de bienvenida! 🎉", { id: "welcome" });
         onSuccess?.();
         onClose();
       } else {
-        const toast = (await import("react-hot-toast")).default;
-        toast.error("Pago cancelado");
+        toast.error(result.error || "Error al enviar WGoal", { id: "welcome" });
       }
     } catch (error) {
-      console.error("Error en pago:", error);
+      console.error("Error en bienvenida:", error);
       const toast = (await import("react-hot-toast")).default;
-      toast.error("Error al procesar el pago");
+      toast.error("Error al procesar la bienvenida", { id: "welcome" });
     } finally {
       setProcessing(false);
     }
