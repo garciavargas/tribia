@@ -10,8 +10,16 @@ export async function sendWGoal(
   amount: number
 ): Promise<{ success: boolean; txHash?: string; error?: string }> {
   try {
+    // Validar inputs
+    if (!recipientAddress || !amount || amount <= 0) {
+      return {
+        success: false,
+        error: "Invalid recipient address or amount"
+      };
+    }
+
     // Convertir amount a wei (18 decimales)
-    const amountInWei = BigInt(amount) * BigInt(10 ** 18);
+    const amountInWei = BigInt(Math.floor(amount)) * BigInt(10 ** 18);
 
     // @ts-expect-error - MiniKit types
     const { finalPayload } = await MiniKit.commandsAsync.sendTransaction({
@@ -52,6 +60,11 @@ export async function getWGoalBalance(
   walletAddress: string
 ): Promise<number> {
   try {
+    // Validar input
+    if (!walletAddress) {
+      return 0;
+    }
+
     // @ts-expect-error - MiniKit types
     const result = await MiniKit.commandsAsync.sendTransaction({
       transaction: [
