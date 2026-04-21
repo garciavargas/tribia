@@ -55,7 +55,7 @@ export default function ModalInicio({ open, onConnect, connecting }: ModalInicio
         {/* Logo y Título */}
         <Box sx={{ textAlign: "center", mb: 3 }}>
           <Typography variant="h3" sx={{ fontWeight: "bold", color: "primary.main", mb: 1 }}>
-            ⚽ Tribia Futbolera
+            Tribia Futb⚽lera
           </Typography>
           <Typography variant="h6" sx={{ color: "text.secondary", fontWeight: 500 }}>
             Haz tus predicciones del Mundial 2026
@@ -73,29 +73,29 @@ export default function ModalInicio({ open, onConnect, connecting }: ModalInicio
           <Typography variant="body2" sx={{ color: "white", mb: 1, opacity: 0.9 }}>
             Comienza en:
           </Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-            <Box>
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, alignItems: "center" }}>
+            <Box sx={{ textAlign: "center", minWidth: 60 }}>
               <Typography variant="h3" sx={{ fontWeight: "bold", color: "white" }}>
                 {countdown.days}
               </Typography>
               <Typography variant="caption" sx={{ color: "white", opacity: 0.8 }}>días</Typography>
             </Box>
             <Typography variant="h3" sx={{ color: "white", opacity: 0.5 }}>:</Typography>
-            <Box>
+            <Box sx={{ textAlign: "center", minWidth: 60 }}>
               <Typography variant="h3" sx={{ fontWeight: "bold", color: "white" }}>
                 {String(countdown.hours).padStart(2, '0')}
               </Typography>
               <Typography variant="caption" sx={{ color: "white", opacity: 0.8 }}>hrs</Typography>
             </Box>
             <Typography variant="h3" sx={{ color: "white", opacity: 0.5 }}>:</Typography>
-            <Box>
+            <Box sx={{ textAlign: "center", minWidth: 60 }}>
               <Typography variant="h3" sx={{ fontWeight: "bold", color: "white" }}>
                 {String(countdown.minutes).padStart(2, '0')}
               </Typography>
               <Typography variant="caption" sx={{ color: "white", opacity: 0.8 }}>min</Typography>
             </Box>
             <Typography variant="h3" sx={{ color: "white", opacity: 0.5 }}>:</Typography>
-            <Box>
+            <Box sx={{ textAlign: "center", minWidth: 60 }}>
               <Typography variant="h3" sx={{ fontWeight: "bold", color: "white" }}>
                 {String(countdown.seconds).padStart(2, '0')}
               </Typography>
@@ -104,87 +104,11 @@ export default function ModalInicio({ open, onConnect, connecting }: ModalInicio
           </Box>
         </Box>
 
-        {/* Ventajas de ser humano verificado */}
+        {/* Solo humanos verificados */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2, textAlign: "center" }}>
             ✅ Solo humanos verificados
           </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <FaCheckCircle size={20} color="#4caf50" />
-              <Typography variant="body2">Verificación con World ID (Orb)</Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <FaCheckCircle size={20} color="#4caf50" />
-              <Typography variant="body2">Sin bots, solo personas reales</Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <FaCheckCircle size={20} color="#4caf50" />
-              <Typography variant="body2">Juego justo y transparente</Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Tabla de Ganancias */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2, textAlign: "center" }}>
-            💰 Gana tokens WGoal
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <FaCoins size={18} color="#FFD700" />
-                <Typography variant="body2">Login diario</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: "bold", color: "primary.main" }}>
-                +1 WGoal
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <FaCoins size={18} color="#FFD700" />
-                <Typography variant="body2">Predicción correcta</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: "bold", color: "primary.main" }}>
-                +5 WGoal
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <FaTrophy size={18} color="#FFD700" />
-                <Typography variant="body2">Acertar campeón (Top 50)</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: "bold", color: "success.main" }}>
-                +10,000 WGoal
-              </Typography>
-            </Box>
-            <Box 
-              sx={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                alignItems: "center",
-                bgcolor: "#fff3cd",
-                p: 1.5,
-                borderRadius: 2,
-                mt: 1
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <FaTrophy size={20} color="#ff9800" />
-                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                  🎰 PREMIO GORDO
-                </Typography>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#ff9800" }}>
-                +100,000 WGoal
-              </Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center", display: "block", mt: 1 }}>
-              * Premio gordo: Acertar campeón + resultado exacto de la final
-            </Typography>
-          </Box>
         </Box>
 
         {/* Botón de Conectar */}

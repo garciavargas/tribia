@@ -123,18 +123,23 @@ export default function Home() {
       toast.loading("Conectando wallet...", { id: "auth" });
 
       // Paso 2: Conectar wallet
-      // @ts-expect-error - MiniKit types
-      const { finalPayload } = await MiniKit.walletAuth({
+      const walletAuthResult = await MiniKit.walletAuth({
         nonce: Math.random().toString(36).substring(7),
         requestId: crypto.randomUUID(),
         expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         statement: "Inicia sesión en Tribia para predecir el Mundial 2026"
       });
 
-      if (finalPayload.status === "success") {
+      if (walletAuthResult.executedWith === "fallback") {
+        toast.error("Debes usar World App para conectar", { id: "auth" });
+        setConnecting(false);
+        return;
+      }
+
+      if (walletAuthResult.data?.address) {
         // Guardar datos de usuario en localStorage
         localStorage.setItem("tribia_user", JSON.stringify({
-          address: finalPayload.address,
+          address: walletAuthResult.data.address,
           verified: true,
           nullifierHash: verifyResult.nullifier,
           joinedAt: Date.now()
@@ -142,11 +147,11 @@ export default function Home() {
         
         // Crear usuario en Firebase
         const { createUser, getUser } = await import("@/lib/database/users");
-        const existingUser = await getUser(finalPayload.address);
+        const existingUser = await getUser(walletAuthResult.data.address);
         
         if (!existingUser) {
           await createUser(
-            finalPayload.address,
+            walletAuthResult.data.address,
             "orb",
             verifyResult.nullifier
           );
