@@ -22,9 +22,9 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#22c55e" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icono-96x96.png" sizes="96x96" type="image/png" />
-        <link rel="icon" href="/icono-192x192.png" sizes="192x192" type="image/png" />
-        <link rel="apple-touch-icon" href="/icono-192x192.png" sizes="192x192" type="image/png" />
+        <link rel="icon" href="/icon-96x96.png" sizes="96x96" type="image/png" />
+        <link rel="icon" href="/icon-192x192.png" sizes="192x192" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" sizes="192x192" type="image/png" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         {children}

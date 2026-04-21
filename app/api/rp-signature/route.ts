@@ -22,8 +22,13 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
+    // Remover prefijo 0x si existe
+    const cleanKey = signingKey.startsWith('0x') 
+      ? signingKey.slice(2) 
+      : signingKey;
+
     const { sig, nonce, createdAt, expiresAt } = signRequest({
-      signingKeyHex: signingKey,
+      signingKeyHex: cleanKey,
       action,
     });
 
