@@ -81,6 +81,19 @@ export default function Home() {
         return;
       }
 
+      // Validar variables de entorno
+      const appId = process.env.NEXT_PUBLIC_APP_ID;
+      const rpId = process.env.NEXT_PUBLIC_RP_ID;
+      
+      console.log("App ID:", appId);
+      console.log("RP ID:", rpId);
+      
+      if (!appId || !rpId) {
+        alert(`Error de configuración: ${!appId ? 'APP_ID' : 'RP_ID'} no está definido`);
+        setConnecting(false);
+        return;
+      }
+
       // Paso 1: Verificar World ID con IDKit 4.0
       const { IDKit, orbLegacy } = await import("@worldcoin/idkit-core");
       
@@ -93,10 +106,10 @@ export default function Home() {
 
       // Crear request de verificación
       const request = await IDKit.request({
-        app_id: process.env.NEXT_PUBLIC_APP_ID as `app_${string}`,
+        app_id: appId as `app_${string}`,
         action: "tribia-signup",
         rp_context: {
-          rp_id: process.env.NEXT_PUBLIC_RP_ID as `rp_${string}`,
+          rp_id: rpId as `rp_${string}`,
           nonce: rpSig.nonce,
           created_at: rpSig.created_at,
           expires_at: rpSig.expires_at,
