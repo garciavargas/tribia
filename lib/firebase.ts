@@ -3,13 +3,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAbdosgXJhWVI_XDS6PifH6RkpdNZijkoQ",
-  authDomain: "tribia-fb08c.firebaseapp.com",
-  projectId: "tribia-fb08c",
-  storageBucket: "tribia-fb08c.firebasestorage.app",
-  messagingSenderId: "1095585601912",
-  appId: "1:1095585601912:web:094b11fc85b13dcc1fd08d",
-  measurementId: "G-ZC03DCMZKD"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?.replace(/_/g, '.') || "tribia-fb08c.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?.replace(/_/g, '.') || "tribia-fb08c.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
 };
 
 // Initialize Firebase (solo una vez)
