@@ -21,22 +21,22 @@ export async function sendWGoal(
     // Convertir amount a wei (18 decimales)
     const amountInWei = BigInt(Math.floor(amount)) * BigInt(10 ** 18);
 
-    // @ts-expect-error - MiniKit types
-    const { finalPayload } = await MiniKit.sendTransaction({
-      transaction: [
+    const result: any = await MiniKit.sendTransaction({
+      chainId: 480,
+      transactions: [
         {
-          address: TRIBIA_CONFIG.token.address,
+          to: TRIBIA_CONFIG.token.address,
           abi: WGOAL_ABI,
           functionName: "transfer",
           args: [recipientAddress, amountInWei.toString()]
-        }
+        } as any
       ]
     });
 
-    if (finalPayload.status === "success") {
+    if (result.finalPayload?.status === "success") {
       return {
         success: true,
-        txHash: finalPayload.transaction_hash
+        txHash: result.finalPayload.transaction_hash
       };
     }
 
@@ -65,19 +65,19 @@ export async function getWGoalBalance(
       return 0;
     }
 
-    // @ts-expect-error - MiniKit types
-    const result = await MiniKit.sendTransaction({
-      transaction: [
+    const result: any = await MiniKit.sendTransaction({
+      chainId: 480,
+      transactions: [
         {
-          address: TRIBIA_CONFIG.token.address,
+          to: TRIBIA_CONFIG.token.address,
           abi: WGOAL_ABI,
           functionName: "balanceOf",
           args: [walletAddress]
-        }
+        } as any
       ]
     });
 
-    if (result.finalPayload.status === "success") {
+    if (result.finalPayload?.status === "success") {
       // Convertir de wei a tokens (18 decimales)
       const balanceInWei = BigInt(result.finalPayload.return_value || "0");
       const balance = Number(balanceInWei / BigInt(10 ** 18));

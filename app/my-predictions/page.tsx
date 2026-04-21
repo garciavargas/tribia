@@ -91,8 +91,8 @@ export default function MyPredictionsPage() {
     }
   };
 
-  const getPredictionIcon = (isCorrect: boolean | null) => {
-    if (isCorrect === null) return "⏳";
+  const getPredictionIcon = (isCorrect: boolean | null | undefined) => {
+    if (isCorrect === null || isCorrect === undefined) return "⏳";
     return isCorrect ? "✅" : "❌";
   };
 
