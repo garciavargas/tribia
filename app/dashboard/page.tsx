@@ -40,16 +40,20 @@ export default function Dashboard() {
       }
 
       console.log("4. welcomeReceived:", dbUser.welcomeReceived);
+      alert(`Debug: welcomeReceived=${dbUser.welcomeReceived}`);
 
       if (!dbUser.welcomeReceived) {
         console.log("5. Mostrando modal de bienvenida");
+        alert("Mostrando modal de bienvenida");
         setShowWelcomeModal(true);
       } else {
         console.log("6. Verificando daily reward");
         const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
         console.log("7. alreadyClaimed:", alreadyClaimed);
+        alert(`Debug: alreadyClaimed=${alreadyClaimed}`);
         if (!alreadyClaimed) {
           console.log("8. Mostrando modal daily");
+          alert("Mostrando modal daily");
           setShowDailyModal(true);
         }
       }
