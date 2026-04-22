@@ -1,32 +1,44 @@
-"use client";
+import SimpleHeader from '@/components/SimpleHeader';
+import SimpleFooter from '@/components/SimpleFooter';
+import SimpleButton from '@/components/SimpleButton';
 
-import ConnectWallet from '@/components/ConnectWallet';
-import ClaimReward from '@/components/ClaimReward';
-import VerifyHuman from '@/components/VerifyHuman';
-
-export default function TestPage() {
+export default function CleanHome() {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          🏆 Tribia Futbolera - Test MiniKit
-        </h1>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <ConnectWallet />
-          <VerifyHuman />
-          <ClaimReward />
+    <div className="min-h-screen flex flex-col">
+      <SimpleHeader />
+      
+      <main className="flex-1 bg-gray-50 p-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-8">🏆 Tribia Futbolera</h1>
+          <p className="text-gray-600 mb-8">Demuestra tu conocimiento del fútbol</p>
+          
+          <div className="grid gap-6 md:grid-cols-3 max-w-2xl mx-auto">
+            {/* Conectar Wallet - Solo UI */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="font-bold mb-4">🔗 Conectar Wallet</h3>
+              <SimpleButton color="blue">Conectar</SimpleButton>
+            </div>
+            
+            {/* Verificar - Solo UI */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="font-bold mb-4">🔐 Verificar</h3>
+              <SimpleButton color="purple">Verificar</SimpleButton>
+            </div>
+            
+            {/* Recompensa - Solo UI */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="font-bold mb-4">🎁 Recompensa</h3>
+              <SimpleButton color="green">Reclamar</SimpleButton>
+            </div>
+          </div>
+          
+          <div className="mt-8 text-sm text-gray-500">
+            Versión esqueleto - Solo UI estática
+          </div>
         </div>
-        
-        <div className="mt-8 p-4 bg-blue-50 rounded">
-          <h3 className="font-bold mb-2">📋 Orden de prueba:</h3>
-          <ol className="list-decimal list-inside space-y-1 text-sm">
-            <li>Conectar Wallet primero</li>
-            <li>Verificar humanidad con World ID</li>
-            <li>Reclamar recompensa</li>
-          </ol>
-        </div>
-      </div>
+      </main>
+      
+      <SimpleFooter />
     </div>
   );
 }

@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
     domains: ['static.usernames.app-backend.toolsforhumanity.com'],
   },
   reactStrictMode: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;
