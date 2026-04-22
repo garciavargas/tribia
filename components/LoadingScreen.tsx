@@ -1,126 +1,98 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
-const SLIDES = [
-  {
-    image: "/pagina1.png?v=2",
-    title: "Predice el Mundial 2026",
-    subtitle: "Gana hasta 100,000 WGoal"
-  },
-  {
-    image: "/pagina2.png?v=2",
-    title: "Solo Usuarios Verificados",
-    subtitle: "Conecta con World ID"
-  },
-  {
-    image: "/pagina3.png?v=2",
-    title: "1 WGoal Gratis Diario",
-    subtitle: "Inicia sesión cada día"
-  }
+const images = [
+  "/pagina1.png",
+  "/pagina2.png", 
+  "/pagina3.png"
 ];
 
-export default function LoadingScreen({ 
-  onComplete 
-}: { 
-  onComplete: () => void 
-}) {
+interface LoadingScreenProps {
+  onComplete: () => void;
+}
+
+export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    // Duración total: 6 segundos (2 segundos por slide × 3 slides)
-    const totalDuration = 6000;
-    const interval = 50;
-    const increment = (100 / totalDuration) * interval;
-
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          setTimeout(onComplete, 300);
-          return 100;
-        }
-        return Math.min(prev + increment, 100);
-      });
-    }, interval);
-
-    return () => clearInterval(progressInterval);
-  }, [onComplete]);
-
-  useEffect(() => {
-    // Cambiar slide cada 2 segundos
-    const slideInterval = setInterval(() => {
-      setCurrentSlide(prev => {
-        const next = prev + 1;
-        if (next >= SLIDES.length) return prev; // Mantener en el último slide
-        return next;
-      });
+    // Carrusel automático cada 2 segundos
+    const imageInterval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
     }, 2000);
 
-    return () => clearInterval(slideInterval);
-  }, []);
+    // Barra de progreso de 0 a 100% en 6 segundos
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          clearInterval(imageInterval);
+          setTimeout(onComplete, 500); // Pequeña pausa antes de completar
+          return 100;
+        }
+        return prev + 2; // Incrementa 2% cada 120ms = 6 segundos total
+      });
+    }, 120);
+
+    return () => {
+      clearInterval(imageInterval);
+      clearInterval(progressInterval);
+    };
+  }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-blue-600 to-blue-900">
-      {/* Carrusel de imágenes */}
-      <div className="relative w-full h-full">
-        {SLIDES.map((slide, index) => (
-          <div
-            key={index}
-            className={`
-              absolute inset-0 transition-opacity duration-500
-              ${index === currentSlide ? "opacity-100" : "opacity-0"}
-            `}
-            style={{
-              backgroundImage: `url(${slide.image})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center"
-            }}
-          />
-        ))}
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-600 to-purple-700 flex flex-col items-center justify-center z-50">
+      {/* Logo */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-white text-center mb-2">
+          Tribia Futb⚽lera
+        </h1>
+        <p className="text-white/80 text-center">Mundial 2026</p>
       </div>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-end p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">
-            ⚽ Tribia
-          </h1>
-          <p className="text-xl text-white/90">
-            {SLIDES[currentSlide].subtitle}
-          </p>
-        </div>
-
-        {/* Barra de progreso */}
-        <div className="w-full max-w-sm">
-          <div className="bg-white/20 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-white h-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-white text-center mt-2 text-sm">
-            {Math.floor(progress)}%
-          </p>
-        </div>
-
-        {/* Indicadores */}
-        <div className="flex gap-2 mt-4">
-          {SLIDES.map((_, index) => (
+      {/* Carrusel de imágenes */}
+      <div className="relative w-80 h-80 mb-8 rounded-2xl overflow-hidden shadow-2xl">
+        <Image
+          src={images[currentImage]}
+          alt={`Tribia página ${currentImage + 1}`}
+          fill
+          className="object-cover transition-opacity duration-500"
+          priority
+        />
+        
+        {/* Overlay con dots */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {images.map((_, index) => (
             <div
               key={index}
-              className={`
-                w-2 h-2 rounded-full transition-all
-                ${index === currentSlide 
-                  ? "bg-white w-6" 
-                  : "bg-white/50"
-                }
-              `}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                index === currentImage ? "bg-white" : "bg-white/40"
+              }`}
             />
           ))}
         </div>
       </div>
+
+      {/* Barra de progreso */}
+      <div className="w-80 mb-4">
+        <div className="flex justify-between text-white/80 text-sm mb-2">
+          <span>Cargando...</span>
+          <span>{progress}%</span>
+        </div>
+        <div className="w-full bg-white/20 rounded-full h-3">
+          <div 
+            className="bg-white h-3 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Texto de carga */}
+      <p className="text-white/60 text-center text-sm">
+        Preparando tu experiencia futbolera...
+      </p>
     </div>
   );
 }

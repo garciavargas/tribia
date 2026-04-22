@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ModalInicio from "@/components/modals/ModalInicio";
-import Spinner from "@/components/Spinner";
+import LoadingScreen from "@/components/LoadingScreen";
 import { MiniKit, isMiniKitAvailable } from "@/lib/minikit";
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [miniKitReady, setMiniKitReady] = useState(false);
   const [showModal, setShowModal] = useState(true);
@@ -202,20 +203,24 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header isGuest />
+    <>
+      {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
       
-      <main className="flex-1 flex items-center justify-center p-4">
-        <h1 className="text-4xl font-bold">Home</h1>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header isGuest />
         
-        <ModalInicio 
-          open={showModal} 
-          onConnect={handleConnect}
-          connecting={connecting}
-        />
-      </main>
-      
-      <Footer isGuest />
-    </div>
+        <main className="flex-1 flex items-center justify-center p-4">
+          <h1 className="text-4xl font-bold">Home</h1>
+          
+          <ModalInicio 
+            open={showModal} 
+            onConnect={handleConnect}
+            connecting={connecting}
+          />
+        </main>
+        
+        <Footer isGuest />
+      </div>
+    </>
   );
 }

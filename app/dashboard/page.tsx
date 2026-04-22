@@ -17,6 +17,8 @@ export default function Dashboard() {
     const initDashboard = async () => {
       const userData = localStorage.getItem("tribia_user");
       
+      console.log("🔍 userData:", userData);
+      
       if (!userData) {
         router.push("/");
         return;
@@ -24,10 +26,15 @@ export default function Dashboard() {
 
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
+      
+      console.log("👤 parsedUser:", parsedUser);
 
       const dbUser = await getUser(parsedUser.address);
       
+      console.log("💾 dbUser:", dbUser);
+      
       if (!dbUser) {
+        console.log("❌ No dbUser, redirecting");
         router.push("/");
         return;
       }
@@ -35,8 +42,14 @@ export default function Dashboard() {
       // Verificar si puede reclamar reward (cada 5 minutos)
       const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
       
+      console.log("🎁 alreadyClaimed:", alreadyClaimed);
+      console.log("🎁 Mostrando modal:", !alreadyClaimed);
+      
       if (!alreadyClaimed) {
+        console.log("✅ Activando modal de recompensa");
         setShowDailyModal(true);
+      } else {
+        console.log("⏰ Ya reclamó, esperando 5 minutos");
       }
     };
 
