@@ -112,6 +112,11 @@ export async function hasClaimedDailyReward(
   
   // Obtener el último reward
   const lastReward = snapshot.docs[0].data() as DailyReward;
+  
+  if (!lastReward.claimedAt) {
+    return false;
+  }
+  
   const lastClaimedAt = new Date(lastReward.claimedAt);
   const now = new Date();
   
