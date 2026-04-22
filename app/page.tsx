@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ModalInicio from "@/components/modals/ModalInicio";
+import Spinner from "@/components/Spinner";
 import { MiniKit, isMiniKitAvailable } from "@/lib/minikit";
 
 export default function Home() {

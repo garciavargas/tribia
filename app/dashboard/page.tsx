@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DailyRewardModal from "@/components/modals/DailyRewardModal";
+import Spinner from "@/components/Spinner";
 import { getUser, hasClaimedDailyReward } from "@/lib/database/users";
 
 export default function Dashboard() {
@@ -49,7 +50,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Cargando...</p>
+        <Spinner />
       </div>
     );
   }
