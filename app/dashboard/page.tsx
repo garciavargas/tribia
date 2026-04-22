@@ -82,7 +82,17 @@ export default function Dashboard() {
         <Header />
 
         <main className="flex-1 flex items-center justify-center p-4">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+            
+            {/* Botón manual para activar recompensa */}
+            <button
+              onClick={() => setShowDailyModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg transition-colors"
+            >
+              🎁 Reclamar Recompensa
+            </button>
+          </div>
         </main>
 
         <Footer userId={user.address} />
