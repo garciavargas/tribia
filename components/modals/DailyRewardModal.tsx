@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, Button, Box, Typography, IconButton } from "@mui/material";
 import { FaTimes, FaGift } from "react-icons/fa";
 import { distributeDailyReward } from "@/lib/rewards";
+import { MiniKit } from "@/lib/minikit";
 import toast from "react-hot-toast";
 import Spinner from "@/components/Spinner";
 
@@ -36,11 +37,20 @@ export default function DailyRewardModal({ open, onClose, onSuccess, userAddress
         toast.success("¡Recompensa reclamada! +1 WGoal");
         onSuccess();
       } else {
-        toast.error("Error al reclamar recompensa");
+        toast.error("Error: No se pudo procesar la recompensa");
       }
     } catch (error) {
       console.error("Error claiming reward:", error);
-      toast.error("Error al reclamar recompensa");
+      const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+      
+      // Mostrar error más específico
+      if (errorMsg.includes("insufficient funds")) {
+        toast.error("Error: Fondos insuficientes en tesorería");
+      } else if (errorMsg.includes("network")) {
+        toast.error("Error: Problema de red, intenta de nuevo");
+      } else {
+        toast.error(`Error: ${errorMsg}`);
+      }
     } finally {
       setLoading(false);
     }
