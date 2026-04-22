@@ -1,4 +1,4 @@
-import { Page } from '@/components/PageLayout';
+import { Page } from '../components/PageLayout';
 import { AuthButton } from '../components/AuthButton';
 
 export default function Home() {

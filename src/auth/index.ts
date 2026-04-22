@@ -1,4 +1,4 @@
-import { hashNonce } from '@/auth/wallet/client-helpers';
+import { hashNonce } from './wallet/client-helpers';
 import { MiniKit } from '@worldcoin/minikit-js';
 import type { MiniAppWalletAuthSuccessPayload } from '@worldcoin/minikit-js/commands';
 // import { verifySiweMessage } from '@worldcoin/minikit-js/siwe';
