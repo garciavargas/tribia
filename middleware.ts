@@ -1,1 +1,4 @@
-export { auth as middleware } from './src/auth';
+// Middleware deshabilitado temporalmente
+export default function middleware() {
+  return;
+}
