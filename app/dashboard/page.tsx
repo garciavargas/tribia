@@ -5,20 +5,16 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DailyRewardModal from "@/components/modals/DailyRewardModal";
-import PaymentModal from "@/components/modals/PaymentModal";
-import { getUser, hasClaimedDailyReward, getUserStreak } from "@/lib/database/users";
+import { getUser, hasClaimedDailyReward } from "@/lib/database/users";
 
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [showDailyModal, setShowDailyModal] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
     const initDashboard = async () => {
       const userData = localStorage.getItem("tribia_user");
-      
-      console.log("1. userData:", userData);
       
       if (!userData) {
         router.push("/");
@@ -27,48 +23,24 @@ export default function Dashboard() {
 
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
-      
-      console.log("2. parsedUser:", parsedUser);
 
       const dbUser = await getUser(parsedUser.address);
-      
-      console.log("3. dbUser:", dbUser);
       
       if (!dbUser) {
         router.push("/");
         return;
       }
 
-      console.log("4. welcomeReceived:", dbUser.welcomeReceived);
-      alert(`Debug: welcomeReceived=${dbUser.welcomeReceived}`);
-
-      if (!dbUser.welcomeReceived) {
-        console.log("5. Mostrando modal de bienvenida");
-        alert("Mostrando modal de bienvenida");
-        setShowWelcomeModal(true);
-      } else {
-        console.log("6. Verificando daily reward");
-        const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
-        console.log("7. alreadyClaimed:", alreadyClaimed);
-        alert(`Debug: alreadyClaimed=${alreadyClaimed}`);
-        if (!alreadyClaimed) {
-          console.log("8. Mostrando modal daily");
-          alert("Mostrando modal daily");
-          setShowDailyModal(true);
-        }
+      // Verificar si puede reclamar reward (cada 5 minutos)
+      const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
+      
+      if (!alreadyClaimed) {
+        setShowDailyModal(true);
       }
     };
 
     initDashboard();
   }, [router]);
-
-  const handleWelcomeComplete = async () => {
-    setShowWelcomeModal(false);
-    if (user) {
-      const { markWelcomeReceived } = await import("@/lib/database/users");
-      await markWelcomeReceived(user.address);
-    }
-  };
 
   const handleDailyRewardClaimed = async () => {
     setShowDailyModal(false);
@@ -84,16 +56,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Modal de Bienvenida - Primer pago */}
-      <PaymentModal
-        open={showWelcomeModal}
-        onClose={() => {}}
-        amount={1}
-        description="🎉 ¡Bienvenido a Tribia!"
-        onSuccess={handleWelcomeComplete}
-      />
-
-      {/* Modal de Recompensa Diaria */}
+      {/* Modal de Recompensa (cada 5 minutos para pruebas) */}
       <DailyRewardModal
         open={showDailyModal}
         onClose={() => setShowDailyModal(false)}

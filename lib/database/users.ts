@@ -92,22 +92,35 @@ export async function updateWGoalBalance(
 }
 
 /**
- * Verificar si el usuario ya reclamó el reward diario de hoy
+ * Verificar si el usuario ya reclamó el reward en los últimos 5 minutos
+ * TODO: Cambiar a 24 horas en producción
  */
 export async function hasClaimedDailyReward(
   walletAddress: string
 ): Promise<boolean> {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  
   const q = query(
     collection(db, DAILY_REWARDS_COLLECTION),
     where("userId", "==", walletAddress),
-    where("date", "==", today),
     where("claimed", "==", true)
   );
   
   const snapshot = await getDocs(q);
-  return !snapshot.empty;
+  
+  if (snapshot.empty) {
+    return false;
+  }
+  
+  // Obtener el último reward
+  const lastReward = snapshot.docs[0].data() as DailyReward;
+  const lastClaimedAt = new Date(lastReward.claimedAt);
+  const now = new Date();
+  
+  // Verificar si han pasado 5 minutos (300000 ms)
+  // TODO: Cambiar a 24 horas (86400000 ms) en producción
+  const timeDiff = now.getTime() - lastClaimedAt.getTime();
+  const FIVE_MINUTES = 5 * 60 * 1000; // 300000 ms
+  
+  return timeDiff < FIVE_MINUTES;
 }
 
 /**
@@ -117,18 +130,18 @@ export async function recordDailyReward(
   walletAddress: string,
   txHash: string
 ): Promise<void> {
-  const today = new Date().toISOString().split('T')[0];
-  const rewardId = `${walletAddress}-${today}`;
+  const now = new Date();
+  const rewardId = `${walletAddress}-${now.getTime()}`;
   
   const rewardRef = doc(db, DAILY_REWARDS_COLLECTION, rewardId);
   
   const rewardData: DailyReward = {
     rewardId,
     userId: walletAddress,
-    date: today,
+    date: now.toISOString().split('T')[0],
     amount: 1,
     claimed: true,
-    claimedAt: new Date().toISOString(),
+    claimedAt: now.toISOString(),
     txHash
   };
   
@@ -140,13 +153,9 @@ export async function recordDailyReward(
   // Actualizar última fecha de login y racha
   const user = await getUser(walletAddress);
   if (user) {
-    const lastLogin = new Date(user.lastLoginDate);
-    const today = new Date();
-    const diffDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-    
     await updateUser(walletAddress, {
-      lastLoginDate: today.toISOString(),
-      dailyLoginStreak: diffDays === 1 ? user.dailyLoginStreak + 1 : 1
+      lastLoginDate: now.toISOString(),
+      dailyLoginStreak: user.dailyLoginStreak + 1
     });
   }
 }
