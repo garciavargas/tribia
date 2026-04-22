@@ -1,0 +1,4 @@
+{
+  "npm.packageManager": "pnpm",
+  "remote.autoForwardPortsFallback": 0
+}

@@ -1,0 +1,102 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import DailyRewardModal from "@/components/modals/DailyRewardModal";
+import Spinner from "@/components/Spinner";
+import { getUser, hasClaimedDailyReward } from "@/lib/database/users";
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [showDailyModal, setShowDailyModal] = useState(false);
+
+  useEffect(() => {
+    const initDashboard = async () => {
+      const userData = localStorage.getItem("tribia_user");
+      
+      console.log("🔍 userData:", userData);
+      
+      if (!userData) {
+        router.push("/");
+        return;
+      }
+
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      
+      console.log("👤 parsedUser:", parsedUser);
+
+      const dbUser = await getUser(parsedUser.address);
+      
+      console.log("💾 dbUser:", dbUser);
+      
+      if (!dbUser) {
+        console.log("❌ No dbUser, redirecting");
+        router.push("/");
+        return;
+      }
+
+      // Verificar si puede reclamar reward (cada 5 minutos)
+      const alreadyClaimed = await hasClaimedDailyReward(parsedUser.address);
+      
+      console.log("🎁 alreadyClaimed:", alreadyClaimed);
+      console.log("🎁 Mostrando modal:", !alreadyClaimed);
+      
+      if (!alreadyClaimed) {
+        console.log("✅ Activando modal de recompensa");
+        setShowDailyModal(true);
+      } else {
+        console.log("⏰ Ya reclamó, esperando 5 minutos");
+      }
+    };
+
+    initDashboard();
+  }, [router]);
+
+  const handleDailyRewardClaimed = async () => {
+    setShowDailyModal(false);
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Modal de Recompensa (cada 5 minutos para pruebas) */}
+      <DailyRewardModal
+        open={showDailyModal}
+        onClose={() => setShowDailyModal(false)}
+        onSuccess={handleDailyRewardClaimed}
+        userAddress={user.address}
+      />
+
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+            
+            {/* Botón manual para activar recompensa */}
+            <button
+              onClick={() => setShowDailyModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg transition-colors"
+            >
+              🎁 Reclamar Recompensa
+            </button>
+          </div>
+        </main>
+
+        <Footer userId={user.address} />
+      </div>
+    </>
+  );
+}
