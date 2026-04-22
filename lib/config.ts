@@ -1,7 +1,7 @@
 // Configuración de Tribia
 export const TRIBIA_CONFIG = {
   // Wallet del creador (tesorería de tokens)
-  treasuryWallet: "0x7400ffa080c63a689e56936d76752d252fc2ce68",
+  treasuryWallet: "0x7D02A94f30a6494bF003357639e8509b44Ff4a82",
   
   // Token WGOAL
   token: {

@@ -1,58 +1,29 @@
-import { MiniKit } from "@/lib/minikit";
-import { TRIBIA_CONFIG } from "./config";
-import { WGOAL_ABI } from "./token";
-import { encodeFunctionData } from "viem";
-
 /**
- * Envía tokens WGOAL a un usuario
+ * Envía tokens WGOAL a un usuario desde la tesorería
  */
 export async function sendWGoal(
   recipientAddress: string,
   amount: number
 ): Promise<{ success: boolean; txHash?: string; error?: string }> {
   try {
-    // Validar inputs
-    if (!recipientAddress || !amount || amount <= 0) {
-      return {
-        success: false,
-        error: "Invalid recipient address or amount"
-      };
-    }
-
-    // Convertir amount a wei (18 decimales)
-    const amountInWei = BigInt(Math.floor(amount)) * BigInt(10 ** 18);
-
-    const result = await MiniKit.sendTransaction({
-      chainId: 480,
-      transactions: [
-        {
-          to: TRIBIA_CONFIG.token.address as `0x${string}`,
-          data: encodeFunctionData({
-            abi: WGOAL_ABI,
-            functionName: "transfer",
-            args: [recipientAddress as `0x${string}`, amountInWei]
-          })
-        }
-      ]
+    const response = await fetch("/api/send-reward", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipientAddress, amount })
     });
 
-    if (result.executedWith === "fallback") {
+    const data = await response.json();
+
+    if (!response.ok) {
       return {
         success: false,
-        error: "Must use World App"
-      };
-    }
-
-    if (result.data?.userOpHash) {
-      return {
-        success: true,
-        txHash: result.data.userOpHash
+        error: data.error || "Failed to send reward"
       };
     }
 
     return {
-      success: false,
-      error: "Transaction failed"
+      success: true,
+      txHash: data.txHash
     };
   } catch (error) {
     console.error("Error sending WGOAL:", error);
@@ -60,49 +31,6 @@ export async function sendWGoal(
       success: false,
       error: String(error)
     };
-  }
-}
-
-/**
- * Obtiene el balance de WGOAL de un usuario
- */
-export async function getWGoalBalance(
-  walletAddress: string
-): Promise<number> {
-  try {
-    // Validar input
-    if (!walletAddress) {
-      return 0;
-    }
-
-    const result = await MiniKit.sendTransaction({
-      chainId: 480,
-      transactions: [
-        {
-          to: TRIBIA_CONFIG.token.address as `0x${string}`,
-          data: encodeFunctionData({
-            abi: WGOAL_ABI,
-            functionName: "balanceOf",
-            args: [walletAddress as `0x${string}`]
-          })
-        }
-      ]
-    });
-
-    if (result.executedWith === "fallback") {
-      return 0;
-    }
-
-    if (result.data?.userOpHash) {
-      // Note: balanceOf is a view function, this approach won't work correctly
-      // This should use a read contract method instead
-      return 0;
-    }
-
-    return 0;
-  } catch (error) {
-    console.error("Error getting balance:", error);
-    return 0;
   }
 }
 
