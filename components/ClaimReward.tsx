@@ -31,7 +31,7 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
       }
     } catch (error) {
       console.error('❌ Error reclamando WGOAL:', error);
-      alert('❌ Error al reclamar WGOAL: ' + error.message);
+      alert('❌ Error al reclamar WGOAL: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
