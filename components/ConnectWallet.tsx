@@ -54,16 +54,12 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-8">Trivia Futbolera</h1>
-      
-      <button
-        onClick={conectarWallet}
-        disabled={loading}
-        className="px-6 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50"
-      >
-        {loading ? 'Conectando...' : 'Conectar Wallet'}
-      </button>
-    </div>
+    <button
+      onClick={conectarWallet}
+      disabled={loading}
+      className="px-8 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-blue-700"
+    >
+      {loading ? 'Conectando...' : 'Conectar Wallet'}
+    </button>
   );
 }
