@@ -168,3 +168,10 @@ export default function MiComponente() {
 ---
 
 **🎯 Con estos 3 componentes puedes crear cualquier MiniApp de Worldcoin**
+
+
+npm install viem
+
+
+
+

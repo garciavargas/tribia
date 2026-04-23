@@ -1,25 +1,57 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Verificar si ya hay wallet en el estado de MiniKit
+    if (MiniKit.user?.walletAddress) {
+      setWallet(MiniKit.user.walletAddress);
+    }
+  }, []);
 
   const conectarWallet = async () => {
     setLoading(true);
     try {
-      const res = await MiniKit.commands.walletAuth({
-        nonce: crypto.randomUUID(),
-        expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        notBefore: new Date(),
-        statement: 'Conecta tu wallet para jugar',
+      // 1. Obtener nonce del backend
+      const nonceResponse = await fetch('/api/nonce');
+      const { nonce } = await nonceResponse.json();
+
+      // 2. Autenticar con MiniKit
+      const result = await MiniKit.walletAuth({
+        nonce,
+        statement: 'Conecta tu wallet para jugar Trivia Futbolera',
+        expirationTime: new Date(Date.now() + 1000 * 60 * 60), // 1 hora
       });
-      
-      if (res.finalPayload.status === 'success') {
-        setWallet(res.finalPayload.address);
+
+      if (result.executedWith === 'fallback') {
+        console.log('Fallback ejecutado');
+        return;
       }
+
+      // 3. Verificar en el backend
+      const verifyResponse = await fetch('/api/complete-siwe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payload: result.data,
+          nonce,
+        }),
+      });
+
+      const verification = await verifyResponse.json();
+      
+      if (verification.isValid) {
+        setWallet(verification.address);
+      } else {
+        console.error('Verificación fallida:', verification.error);
+      }
+    } catch (error) {
+      console.error('Error conectando wallet:', error);
     } finally {
       setLoading(false);
     }
@@ -35,14 +67,7 @@ export default function Home() {
           disabled={loading}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50"
         >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin">⏳</span>
-              Conectando...
-            </span>
-          ) : (
-            'Conectar Wallet'
-          )}
+          {loading ? 'Conectando...' : 'Conectar Wallet'}
         </button>
       ) : (
         <p className="text-green-600">Conectado: {wallet.slice(0, 6)}...{wallet.slice(-4)}</p>
