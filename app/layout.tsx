@@ -1,4 +1,5 @@
 import './globals.css';
+import MiniKitProvider from '@/components/MiniKitProvider';
 
 export default function RootLayout({
   children,
@@ -7,7 +8,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <MiniKitProvider>{children}</MiniKitProvider>
+      </body>
     </html>
   );
 }
