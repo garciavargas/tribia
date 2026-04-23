@@ -13,36 +13,21 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   const reclamarWGOAL = async () => {
     setLoading(true);
     try {
-      const result = await MiniKit.pay({
-        reference: `claim-${Date.now()}`,
-        to: walletAddress,
-        tokens: [
-          {
-            symbol: 'WGOAL',
-            token_amount: '1.0',
-          }
-        ],
-        description: 'Reclamo diario WGOAL - Trivia Futbolera',
-        fallback: async () => {
-          console.log('🔧 Fallback pay - desarrollo local');
-          return { 
-            executedWith: 'fallback',
-            data: { 
-              userOpHash: 'fake-hash-' + Date.now(),
-              status: 'success' 
-            }
-          };
-        },
+      // Llamar API backend que maneja World ID + transferencia
+      const response = await fetch('/api/claim-wgoal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress }),
       });
 
-      console.log('💰 Pago resultado:', result);
+      const result = await response.json();
       
-      if (result.executedWith === 'fallback') {
-        console.log('✅ Pago simulado en desarrollo');
-        alert('💰 WGOAL reclamado (simulado en desarrollo)');
-      } else {
-        console.log('✅ Pago real ejecutado');
+      if (response.ok) {
+        console.log('✅ Claim exitoso:', result);
         alert('💰 ¡WGOAL reclamado exitosamente!');
+      } else {
+        console.error('❌ Error en claim:', result.error);
+        alert('❌ ' + result.error);
       }
     } catch (error) {
       console.error('❌ Error reclamando WGOAL:', error);
