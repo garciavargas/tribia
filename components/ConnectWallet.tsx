@@ -22,19 +22,14 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
         nonce,
         statement: 'Conecta tu wallet para jugar Trivia Futbolera',
         expirationTime: new Date(Date.now() + 1000 * 60 * 60), // 1 hora
-        fallback: async () => {
-          console.log('🔧 Fallback wallet - desarrollo local');
-          return { address: '0x1234567890123456789012345678901234567890' };
-        },
       });
 
       if (result.executedWith === 'fallback') {
-        console.log('✅ Usando fallback para desarrollo');
-        onWalletConnected(result.data.address);
+        console.log('Fallback ejecutado');
         return;
       }
 
-      // 3. Verificar en el backend (solo si no es fallback)
+      // 3. Verificar en el backend
       const verifyResponse = await fetch('/api/complete-siwe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,10 +44,10 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
       if (verification.isValid) {
         onWalletConnected(verification.address);
       } else {
-        console.error('❌ Verificación fallida:', verification.error);
+        console.error('Verificación fallida:', verification.error);
       }
     } catch (error) {
-      console.error('❌ Error conectando wallet:', error);
+      console.error('Error conectando wallet:', error);
     } finally {
       setLoading(false);
     }
