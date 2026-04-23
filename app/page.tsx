@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { MiniKit } from '@worldcoin/minikit-js';
 import ConnectWallet from '../components/ConnectWallet';
 import Header from '../components/Header';
-import ClaimReward from '../components/ClaimReward';
-import PayButton from '../components/PayButton';
 
 export default function Home() {
   const [wallet, setWallet] = useState('');
@@ -14,22 +11,27 @@ export default function Home() {
     setWallet(address);
   };
 
-  if (!wallet) {
-    return <ConnectWallet onWalletConnected={handleWalletConnected} />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header walletAddress={wallet} />
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-6 p-6">
+      <h1 className="text-3xl font-bold mb-8">Trivia Futbolera</h1>
       
-      <main className="max-w-4xl mx-auto p-6">
-        <div className="flex justify-center gap-4 mb-6">
-          <PayButton walletAddress={wallet} />
-        </div>
-        <div className="grid gap-6">
-          <ClaimReward walletAddress={wallet} />
-        </div>
-      </main>
+      {!wallet ? (
+        <ConnectWallet onWalletConnected={handleWalletConnected} />
+      ) : (
+        <>
+          <Header walletAddress={wallet} />
+          
+          <div className="flex flex-col gap-4 mt-8">
+            <button className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+              Pagar 1 WLD
+            </button>
+            
+            <button className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
+              Reclamar
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
