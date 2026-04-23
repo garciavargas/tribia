@@ -23,16 +23,30 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
           }
         ],
         description: 'Reclamo diario WGOAL - Trivia Futbolera',
+        fallback: async () => {
+          console.log('🔧 Fallback pay - desarrollo local');
+          return { 
+            executedWith: 'fallback',
+            data: { 
+              userOpHash: 'fake-hash-' + Date.now(),
+              status: 'success' 
+            }
+          };
+        },
       });
 
-      console.log('Pago resultado:', result);
+      console.log('💰 Pago resultado:', result);
       
-      if (result.executedWith !== 'fallback') {
-        alert('¡WGOAL reclamado exitosamente!');
+      if (result.executedWith === 'fallback') {
+        console.log('✅ Pago simulado en desarrollo');
+        alert('💰 WGOAL reclamado (simulado en desarrollo)');
+      } else {
+        console.log('✅ Pago real ejecutado');
+        alert('💰 ¡WGOAL reclamado exitosamente!');
       }
     } catch (error) {
-      console.error('Error reclamando WGOAL:', error);
-      alert('Error al reclamar WGOAL');
+      console.error('❌ Error reclamando WGOAL:', error);
+      alert('❌ Error al reclamar WGOAL: ' + error.message);
     } finally {
       setLoading(false);
     }
