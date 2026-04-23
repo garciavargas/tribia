@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
 import ConnectWallet from '../components/ConnectWallet';
 import Header from '../components/Header';
@@ -10,21 +10,8 @@ import PayButton from '../components/PayButton';
 export default function Home() {
   const [wallet, setWallet] = useState('');
 
-  useEffect(() => {
-    // Verificar si ya hay wallet en MiniKit o localStorage
-    const savedWallet = localStorage.getItem('wallet_address');
-    
-    if (MiniKit.user?.walletAddress) {
-      setWallet(MiniKit.user.walletAddress);
-      localStorage.setItem('wallet_address', MiniKit.user.walletAddress);
-    } else if (savedWallet) {
-      setWallet(savedWallet);
-    }
-  }, []);
-
   const handleWalletConnected = (address: string) => {
     setWallet(address);
-    localStorage.setItem('wallet_address', address);
   };
 
   if (!wallet) {
