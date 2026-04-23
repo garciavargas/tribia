@@ -2,42 +2,45 @@
 
 import { useState } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
-import type {
-  CommandResultByVia,
-  MiniKitWalletAuthOptions,
-  WalletAuthResult,
-} from '@worldcoin/minikit-js/commands';
 
 interface ConnectWalletProps {
-  onWalletConnected: (address: string) => void;
+  onWalletConnected: (data: {
+    address: string;
+    chainId: string;
+    chainName: string;
+  }) => void;
 }
 
 export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const conectarWallet = async () => {
     setLoading(true);
+    setError(null);
+
     try {
-      // 1. Obtener nonce del backend
-      const response = await fetch('/api/nonce');
-      const { nonce } = await response.json();
+      // 1. Obtener nonce
+      const nonceResponse = await fetch('/api/nonce');
+      if (!nonceResponse.ok) {
+        throw new Error('Error al obtener nonce del servidor');
+      }
+      const { nonce } = await nonceResponse.json();
 
-      // 2. Configurar opciones de autenticación
-      const input = {
+      // 2. Wallet Auth con MiniKit
+      const result = await MiniKit.walletAuth({
         nonce,
-        statement: 'Conecta tu wallet para jugar Trivia Futbolera',
-        expirationTime: new Date(Date.now() + 1000 * 60 * 60),
-      } satisfies MiniKitWalletAuthOptions;
+        statement: 'Conecta tu wallet para usar Trivia Futbolera',
+        expirationTime: new Date(Date.now() + 60 * 60 * 1000),
+      });
 
-      // 3. Autenticar con MiniKit
-      const result: CommandResultByVia<WalletAuthResult> = await MiniKit.walletAuth(input);
-
+      // 3. Verificar errores de MiniKit
       if (result.executedWith === 'fallback') {
-        console.log('Fallback ejecutado');
+        setError('Conexión cancelada por el usuario');
         return;
       }
 
-      // 4. Verificar en el backend
+      // 4. Enviar a backend para verificación SIWE
       const verifyResponse = await fetch('/api/complete-siwe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,26 +51,58 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
       });
 
       const verification = await verifyResponse.json();
-      
+
       if (verification.isValid) {
-        onWalletConnected(verification.address);
+        // ¡ÉXITO! Pasar datos al padre
+        onWalletConnected({
+          address: verification.address,
+          chainId: verification.chainId,
+          chainName: verification.chainName,
+        });
       } else {
-        console.error('Verificación fallida:', verification.error);
+        setError(verification.error || 'Verificación fallida');
       }
-    } catch (error) {
-      console.error('Error conectando wallet:', error);
+    } catch (err) {
+      console.error('Error conectando wallet:', err);
+      setError('Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <button
-      onClick={conectarWallet}
-      disabled={loading}
-      className="px-8 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-blue-700"
-    >
-      {loading ? 'Conectando...' : 'Conectar Wallet'}
-    </button>
+    <div className="flex flex-col items-center gap-4">
+      <button
+        onClick={conectarWallet}
+        disabled={loading}
+        className={`
+          px-8 py-4 text-lg font-bold rounded-xl
+          transition-all duration-300 transform
+          ${loading 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105 hover:shadow-lg'
+          }
+          text-white shadow-md
+        `}
+      >
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Conectando...
+          </span>
+        ) : (
+          '🔌 Conectar Wallet'
+        )}
+      </button>
+
+      {error && (
+        <div className="p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-200">
+          <p className="font-semibold">❌ {error}</p>
+        </div>
+      )}
+    </div>
   );
 }
