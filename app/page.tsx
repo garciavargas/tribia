@@ -17,18 +17,17 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-6 p-6">
       <h1 className="text-3xl font-bold mb-8">Trivia Futbolera</h1>
       
-      {!wallet ? (
+      <div className="flex flex-col gap-4">
         <ConnectWallet onWalletConnected={handleWalletConnected} />
-      ) : (
-        <>
-          <Header walletAddress={wallet} />
-          
-          <div className="flex flex-col gap-4 mt-8">
+        
+        {wallet && (
+          <>
+            <Header walletAddress={wallet} />
             <PayButton walletAddress={wallet} />
             <ClaimReward walletAddress={wallet} />
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
