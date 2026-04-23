@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MiniKit } from '@worldcoin/minikit-js';
+import { IDKit, orbLegacy } from '@worldcoin/idkit-core';
 
 interface ClaimRewardProps {
   walletAddress: string;
@@ -13,47 +13,81 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   const reclamarWGOAL = async () => {
     setLoading(true);
     try {
-      // Transferir 1 WGOAL desde treasury al usuario usando MiniKit nativo
-      const result = await MiniKit.sendTransaction({
-        chainId: 480, // World Chain
+      // 1. Obtener RP signature del backend
+      const rpSig = await fetch('/api/rp-signature', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'claim-wgoal' }),
+      }).then((r) => r.json());
+
+      // 2. Crear request de World ID con IDKit
+      const request = await IDKit.request({
+        app_id: process.env.NEXT_PUBLIC_APP_ID!,
+        action: 'claim-wgoal',
+        rp_context: {
+          rp_id: process.env.NEXT_PUBLIC_RP_ID!,
+          nonce: rpSig.nonce,
+          created_at: rpSig.created_at,
+          expires_at: rpSig.expires_at,
+          signature: rpSig.sig,
+        },
+        allow_legacy_proofs: true,
+        environment: 'production',
+      }).preset(orbLegacy({ signal: walletAddress }));
+
+      // 3. Esperar respuesta del usuario
+      const response = await request.pollUntilCompletion();
+
+      // 4. Verificar proof en backend
+      const verifyResponse = await fetch('/api/verify-proof', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          rp_id: process.env.NEXT_PUBLIC_RP_ID!,
+          idkitResponse: response,
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyData.success) {
+        alert('❌ Verificación fallida');
+        return;
+      }
+
+      // 5. Usuario verificado → Transferir WGOAL desde treasury
+      const MiniKit = (await import('@worldcoin/minikit-js')).MiniKit;
+      const txResult = await MiniKit.sendTransaction({
+        chainId: 480,
         transactions: [
           {
-            to: '0x1A1E80A27093665a2E6e7f3Af3B69BB64fE79cD7', // WGOAL contract
-            data: '0xa9059cbb' + // transfer function selector
-                  walletAddress.slice(2).padStart(64, '0') + // to address
-                  '0de0b6b3a7640000', // 1 WGOAL (1e18 in hex)
+            to: '0x1A1E80A27093665a2E6e7f3Af3B69BB64fE79cD7',
+            data: '0xa9059cbb' +
+                  walletAddress.slice(2).padStart(64, '0') +
+                  '0de0b6b3a7640000',
           }
         ],
       });
 
-      console.log('✅ Transacción resultado:', result);
-      
-      if (result.executedWith !== 'fallback') {
+      if (txResult.executedWith !== 'fallback') {
         alert('💰 ¡WGOAL reclamado exitosamente!');
       }
     } catch (error) {
-      console.error('❌ Error reclamando WGOAL:', error);
-      alert('❌ Error al reclamar WGOAL: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      console.error('❌ Error:', error);
+      alert('❌ Error al reclamar');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-center">Reclamo Diario</h2>
-      
-      <div className="text-center mb-6">
-        <div className="text-3xl font-bold text-green-600 mb-2">1 WGOAL</div>
-        <p className="text-gray-600 text-sm">Disponible cada 8 horas</p>
-      </div>
-
+    <div className="fixed bottom-8 left-0 right-0 flex justify-center">
       <button
         onClick={reclamarWGOAL}
         disabled={loading}
-        className="w-full px-6 py-3 bg-green-600 text-white rounded-lg disabled:opacity-50 font-semibold"
+        className="px-8 py-3 bg-green-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-green-700"
       >
-        {loading ? 'Reclamando...' : 'Reclamar WGOAL'}
+        {loading ? 'Reclamando...' : 'Reclamar'}
       </button>
     </div>
   );
