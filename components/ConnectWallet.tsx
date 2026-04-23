@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
+import type {
+  CommandResultByVia,
+  MiniKitWalletAuthOptions,
+  WalletAuthResult,
+} from '@worldcoin/minikit-js/commands';
 
 interface ConnectWalletProps {
   onWalletConnected: (address: string) => void;
@@ -14,22 +19,25 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
     setLoading(true);
     try {
       // 1. Obtener nonce del backend
-      const nonceResponse = await fetch('/api/nonce');
-      const { nonce } = await nonceResponse.json();
+      const response = await fetch('/api/nonce');
+      const { nonce } = await response.json();
 
-      // 2. Autenticar con MiniKit
-      const result = await MiniKit.walletAuth({
+      // 2. Configurar opciones de autenticación
+      const input = {
         nonce,
         statement: 'Conecta tu wallet para jugar Trivia Futbolera',
-        expirationTime: new Date(Date.now() + 1000 * 60 * 60), // 1 hora
-      });
+        expirationTime: new Date(Date.now() + 1000 * 60 * 60),
+      } satisfies MiniKitWalletAuthOptions;
+
+      // 3. Autenticar con MiniKit
+      const result: CommandResultByVia<WalletAuthResult> = await MiniKit.walletAuth(input);
 
       if (result.executedWith === 'fallback') {
         console.log('Fallback ejecutado');
         return;
       }
 
-      // 3. Verificar en el backend
+      // 4. Verificar en el backend
       const verifyResponse = await fetch('/api/complete-siwe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
