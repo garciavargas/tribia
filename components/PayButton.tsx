@@ -18,7 +18,7 @@ export default function PayButton({ walletAddress }: PayButtonProps) {
         to: '0x7400ffa080c63a689e56936d76752d252fc2ce68',
         tokens: [
           {
-            symbol: 'WLD',
+            symbol: 'WLD' as any,
             token_amount: '1',
           }
         ],

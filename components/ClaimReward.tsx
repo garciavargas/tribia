@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { IDKit, CredentialType, ISuccessResult } from '@worldcoin/idkit';
 import { MiniKit } from '@worldcoin/minikit-js';
 
 interface ClaimRewardProps {
@@ -14,33 +13,9 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   const reclamarWGOAL = async () => {
     setLoading(true);
     try {
-      // 1. Verificar World ID con IDKit
-      const { proof } = await new Promise<ISuccessResult>((resolve, reject) => {
-        IDKit.open({
-          app_id: process.env.NEXT_PUBLIC_APP_ID!,
-          action: 'claim-wgoal',
-          signal: walletAddress,
-          credential_types: [CredentialType.Orb],
-          onSuccess: resolve,
-          onError: reject,
-        });
-      });
-
-      // 2. Verificar proof en backend
-      const verifyResponse = await fetch(`/api/v4/verify/${process.env.NEXT_PUBLIC_RP_ID}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(proof),
-      });
-
-      const verifyData = await verifyResponse.json();
-
-      if (!verifyData.success) {
-        alert('❌ Verificación World ID fallida');
-        return;
-      }
-
-      // 3. Usuario verificado → Transferir WGOAL
+      // Por ahora solo transferir WGOAL (sin verificación World ID)
+      // TODO: Implementar verificación World ID con IDKit cuando esté disponible
+      
       const txResult = await MiniKit.sendTransaction({
         chainId: 480,
         transactions: [
