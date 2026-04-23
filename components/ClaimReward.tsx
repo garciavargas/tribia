@@ -68,14 +68,12 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   };
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 flex justify-center">
-      <button
-        onClick={reclamarWGOAL}
-        disabled={loading}
-        className="px-8 py-3 bg-green-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-green-700"
-      >
-        {loading ? 'Reclamando...' : 'Reclamar'}
-      </button>
-    </div>
+    <button
+      onClick={reclamarWGOAL}
+      disabled={loading}
+      className="px-8 py-3 bg-green-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-green-700"
+    >
+      {loading ? 'Reclamando...' : 'Reclamar'}
+    </button>
   );
 }

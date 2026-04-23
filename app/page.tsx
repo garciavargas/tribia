@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import ConnectWallet from '../components/ConnectWallet';
 import Header from '../components/Header';
+import PayButton from '../components/PayButton';
+import ClaimReward from '../components/ClaimReward';
 
 export default function Home() {
   const [wallet, setWallet] = useState('');
@@ -22,13 +24,8 @@ export default function Home() {
           <Header walletAddress={wallet} />
           
           <div className="flex flex-col gap-4 mt-8">
-            <button className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
-              Pagar 1 WLD
-            </button>
-            
-            <button className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
-              Reclamar
-            </button>
+            <PayButton walletAddress={wallet} />
+            <ClaimReward walletAddress={wallet} />
           </div>
         </>
       )}
