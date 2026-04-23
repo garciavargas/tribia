@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { IDKit, orbLegacy } from '@worldcoin/idkit-core';
+import { MiniKit } from '@worldcoin/minikit-js';
 
 interface ClaimRewardProps {
   walletAddress: string;
@@ -13,38 +13,25 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   const reclamarWGOAL = async () => {
     setLoading(true);
     try {
-      // 1. Obtener RP signature del backend
-      const rpSig = await fetch('/api/rp-signature', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'claim-wgoal' }),
-      }).then((r) => r.json());
-
-      // 2. Crear request de World ID con IDKit
-      const request = await IDKit.request({
-        app_id: process.env.NEXT_PUBLIC_APP_ID!,
+      // 1. Verificar identidad humana con World ID
+      const verifyResult = await MiniKit.verify({
         action: 'claim-wgoal',
-        rp_context: {
-          rp_id: process.env.NEXT_PUBLIC_RP_ID!,
-          nonce: rpSig.nonce,
-          created_at: rpSig.created_at,
-          expires_at: rpSig.expires_at,
-          signature: rpSig.sig,
-        },
-        allow_legacy_proofs: true,
-        environment: 'production',
-      }).preset(orbLegacy({ signal: walletAddress }));
+        signal: walletAddress,
+      });
 
-      // 3. Esperar respuesta del usuario
-      const response = await request.pollUntilCompletion();
+      if (verifyResult.executedWith === 'fallback') {
+        console.log('Verificación cancelada');
+        setLoading(false);
+        return;
+      }
 
-      // 4. Verificar proof en backend
+      // 2. Verificar proof en backend
       const verifyResponse = await fetch('/api/verify-proof', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           rp_id: process.env.NEXT_PUBLIC_RP_ID!,
-          idkitResponse: response,
+          idkitResponse: verifyResult.data,
         }),
       });
 
@@ -52,11 +39,11 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
 
       if (!verifyData.success) {
         alert('❌ Verificación fallida');
+        setLoading(false);
         return;
       }
 
-      // 5. Usuario verificado → Transferir WGOAL desde treasury
-      const MiniKit = (await import('@worldcoin/minikit-js')).MiniKit;
+      // 3. Usuario verificado → Transferir WGOAL desde treasury
       const txResult = await MiniKit.sendTransaction({
         chainId: 480,
         transactions: [
