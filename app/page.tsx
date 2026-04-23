@@ -10,15 +10,15 @@ export default function Home() {
   const conectarWallet = async () => {
     setLoading(true);
     try {
-      const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
+      const res = await MiniKit.commands.walletAuth({
         nonce: crypto.randomUUID(),
         expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         notBefore: new Date(),
         statement: 'Conecta tu wallet para jugar',
       });
       
-      if (finalPayload.status === 'success') {
-        setWallet(finalPayload.address);
+      if (res.finalPayload.status === 'success') {
+        setWallet(res.finalPayload.address);
       }
     } finally {
       setLoading(false);
