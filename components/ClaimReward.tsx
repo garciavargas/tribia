@@ -13,21 +13,23 @@ export default function ClaimReward({ walletAddress }: ClaimRewardProps) {
   const reclamarWGOAL = async () => {
     setLoading(true);
     try {
-      // Llamar API backend que maneja World ID + transferencia
-      const response = await fetch('/api/claim-wgoal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }),
+      // Transferir 1 WGOAL desde treasury al usuario usando MiniKit nativo
+      const result = await MiniKit.sendTransaction({
+        chainId: 480, // World Chain
+        transactions: [
+          {
+            to: '0x1A1E80A27093665a2E6e7f3Af3B69BB64fE79cD7', // WGOAL contract
+            data: '0xa9059cbb' + // transfer function selector
+                  walletAddress.slice(2).padStart(64, '0') + // to address
+                  '0de0b6b3a7640000', // 1 WGOAL (1e18 in hex)
+          }
+        ],
       });
 
-      const result = await response.json();
+      console.log('✅ Transacción resultado:', result);
       
-      if (response.ok) {
-        console.log('✅ Claim exitoso:', result);
+      if (result.executedWith !== 'fallback') {
         alert('💰 ¡WGOAL reclamado exitosamente!');
-      } else {
-        console.error('❌ Error en claim:', result.error);
-        alert('❌ ' + result.error);
       }
     } catch (error) {
       console.error('❌ Error reclamando WGOAL:', error);
