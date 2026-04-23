@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MiniKit } from '@worldcoin/minikit-js';
 
 interface ValidarWalletProps {
   onValidationSuccess: (walletAddress: string) => void;
@@ -13,22 +14,38 @@ export default function ValidarWallet({ onValidationSuccess }: ValidarWalletProp
     setIsValidating(true);
     
     try {
-      // Simular conexión de wallet por ahora
-      const mockAddress = '0x' + Math.random().toString(16).substr(2, 40);
-      
-      const response = await fetch('/api/worldcoin/validate-wallet', {
+      // 1. Obtener nonce del backend
+      const nonceResponse = await fetch('/api/nonce');
+      const { nonce } = await nonceResponse.json();
+
+      // 2. Autenticar con MiniKit
+      const result = await MiniKit.walletAuth({
+        nonce,
+        statement: 'Conecta tu wallet para jugar Trivia Futbolera',
+        expirationTime: new Date(Date.now() + 1000 * 60 * 60),
+      });
+
+      if (result.executedWith === 'fallback') {
+        console.log('Fallback ejecutado');
+        return;
+      }
+
+      // 3. Verificar en el backend
+      const verifyResponse = await fetch('/api/complete-siwe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: 'success',
-          address: mockAddress
-        })
+          payload: result.data,
+          nonce,
+        }),
       });
 
-      const result = await response.json();
+      const verification = await verifyResponse.json();
       
-      if (result.success) {
-        onValidationSuccess(mockAddress);
+      if (verification.isValid) {
+        onValidationSuccess(verification.address);
+      } else {
+        console.error('Verificación fallida:', verification.error);
       }
     } catch (error) {
       console.error('Error validating wallet:', error);
