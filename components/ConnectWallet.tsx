@@ -20,11 +20,6 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
     setError(null);
 
     try {
-      // 0. Desconectar primero para forzar el modal
-      if (MiniKit.isInstalled()) {
-        await MiniKit.logout();
-      }
-
       // 1. Obtener nonce
       const nonceResponse = await fetch('/api/nonce');
       if (!nonceResponse.ok) {
