@@ -19,14 +19,18 @@ export default function PayButton({ walletAddress }: PayButtonProps) {
         tokens: [
           {
             symbol: 'WLD' as any,
-            token_amount: '1',
+            token_amount: '0.02',  // Cambiado a 0.02 WLD
           }
         ],
         description: 'Pago Trivia Futbolera',
       });
 
-      if (result.executedWith !== 'fallback') {
+      // ✅ CORRECCIÓN: fallback = cancelado, cualquier otra cosa = éxito
+      if (result.executedWith === 'fallback') {
+        alert('❌ Pago cancelado por el usuario');
+      } else {
         alert('💰 Pago exitoso');
+        console.log('✅ Resultado:', result);
       }
     } catch (error) {
       console.error('❌ Error:', error);
@@ -42,7 +46,7 @@ export default function PayButton({ walletAddress }: PayButtonProps) {
       disabled={loading}
       className="px-8 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-50 font-semibold hover:bg-blue-700"
     >
-      {loading ? 'Pagando...' : 'Pagar 1 WLD'}
+      {loading ? 'Pagando...' : 'Pagar 0.02 WLD'}
     </button>
   );
 }
