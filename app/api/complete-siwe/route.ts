@@ -22,8 +22,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extraer dirección de la wallet
+    // Extraer datos del mensaje SIWE verificado
     const address = verification.siweMessageData.address;
+    const chainId = verification.siweMessageData.chainId || 'worldchain';
 
     if (!address) {
       return NextResponse.json(
@@ -35,8 +36,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       isValid: true,
       address,
-      chainId: process.env.NEXT_PUBLIC_CHAIN_ID,
-      chainName: process.env.NEXT_PUBLIC_CHAIN_NAME
+      chainId,
+      chainName: 'World Chain'
     });
 
   } catch (error) {

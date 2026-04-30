@@ -56,8 +56,8 @@ export default function ConnectWallet({ onWalletConnected }: ConnectWalletProps)
         // ¡ÉXITO! Pasar datos al padre
         onWalletConnected({
           address: verification.address,
-          chainId: verification.chainId,
-          chainName: verification.chainName,
+          chainId: verification.chainId || 'worldchain',
+          chainName: verification.chainName || 'World Chain',
         });
       } else {
         setError(verification.error || 'Verificación fallida');
