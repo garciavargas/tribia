@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
     // Extraer datos del mensaje SIWE verificado
     const address = verification.siweMessageData.address;
-    const chainId = verification.siweMessageData.chainId || 'worldchain';
+    const chainId = verification.siweMessageData.chain_id || 'worldchain';
 
     if (!address) {
       return NextResponse.json(
